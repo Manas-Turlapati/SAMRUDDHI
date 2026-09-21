@@ -696,7 +696,8 @@ p {
   font-weight: 800;
 }
 
-.farmer-language select {
+.farmer-language select,
+.weather-risk-form input {
   min-width: 12rem;
   min-height: 2.8rem;
   border: 1px solid rgba(221, 228, 216, 0.86);
@@ -714,6 +715,53 @@ p {
   margin-bottom: 1rem;
 }
 
+.farmer-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.farmer-steps article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 16px 40px rgba(24, 59, 37, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.farmer-steps span {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffffff;
+  background: var(--green-700);
+  font-weight: 900;
+}
+
+.farmer-steps h2 {
+  margin: 0 0 0.25rem;
+  color: var(--green-900);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.farmer-steps p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: minmax(280px, 0.88fr) minmax(320px, 1.12fr);
@@ -726,6 +774,7 @@ p {
 .result-placeholder,
 .profile-card,
 .empty-state {
+  min-width: 0;
   padding: clamp(1rem, 3vw, 1.5rem);
 }
 
@@ -788,6 +837,7 @@ p {
 
 .result-card {
   min-height: 460px;
+  overflow: hidden;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.75), rgba(220, 235, 221, 0.42)),
     rgba(255, 255, 255, 0.48);
@@ -799,6 +849,7 @@ p {
   gap: 1rem;
   align-items: center;
   margin-bottom: 1.5rem;
+  min-width: 0;
 }
 
 .result-header .eyebrow {
@@ -809,8 +860,11 @@ p {
 .result-header h2 {
   margin: 0;
   color: var(--green-900);
-  font-size: clamp(2rem, 5vw, 3.8rem);
-  line-height: 1;
+  font-size: 2.2rem;
+  line-height: 1.05;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .confidence-ring {
@@ -839,6 +893,7 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .report-actions {
@@ -896,6 +951,7 @@ p {
 }
 
 .recommendation-grid article {
+  min-width: 0;
   min-height: 7rem;
   border: 1px solid var(--line);
   border-radius: 0.9rem;
@@ -912,13 +968,128 @@ p {
   margin-bottom: 0.35rem;
   color: var(--muted);
   font-size: 0.82rem;
+  overflow-wrap: anywhere;
 }
 
 .recommendation-grid strong,
 .history-card dd,
 .profile-card dd {
+  display: block;
+  max-width: 100%;
   color: var(--green-900);
   font-weight: 850;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.weather-risk-panel {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  border-top: 1px solid var(--line);
+  padding-top: 1.2rem;
+}
+
+.weather-risk-panel .section-heading {
+  margin-bottom: 0;
+}
+
+.weather-risk-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.weather-risk-form label {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  color: var(--green-900);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.weather-risk-message {
+  margin: 0;
+}
+
+.weather-risk-result {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.weather-location-summary {
+  margin: 0;
+  color: var(--green-900);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.weather-values {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.weather-values article,
+.risk-summary {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  padding: 0.85rem;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.weather-values span,
+.risk-summary span {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.weather-values strong,
+.risk-summary strong {
+  display: block;
+  color: var(--green-900);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.risk-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 0.8rem;
+  align-items: center;
+}
+
+.risk-summary span {
+  grid-column: 1 / -1;
+  margin-bottom: 0;
+}
+
+.risk-summary small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.risk-high strong {
+  color: #9f2f24;
+}
+
+.risk-medium strong {
+  color: #8a640f;
+}
+
+.risk-low strong {
+  color: var(--green-700);
+}
+
+.risk-explanation {
+  margin: 0;
+  color: var(--muted);
+  overflow-wrap: anywhere;
 }
 
 .loading-page,
@@ -1097,6 +1268,7 @@ p {
   }
 
   .features-section,
+  .farmer-steps,
   .steps {
     grid-template-columns: 1fr;
   }
@@ -1145,12 +1317,21 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .weather-risk-form,
+  .weather-values {
+    grid-template-columns: 1fr;
+  }
+
   .shop-actions {
     grid-template-columns: 1fr;
   }
 
   .result-header {
     grid-template-columns: 1fr;
+  }
+
+  .result-header h2 {
+    font-size: 1.6rem;
   }
 
   .confidence-ring {

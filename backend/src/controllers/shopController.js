@@ -4,7 +4,7 @@ const { getNearbyShops } = require("../services/shopService");
 const nearbyShops = asyncHandler(async (req, res) => {
   const { latitude, longitude, fertilizer, limit, radiusKm } = req.query;
 
-  const shops = getNearbyShops({
+  const result = getNearbyShops({
     latitude,
     longitude,
     fertilizer,
@@ -15,8 +15,10 @@ const nearbyShops = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     fertilizer: fertilizer || "",
-    radiusKm: Number(radiusKm) || 10,
-    shops,
+    requestedRadiusKm: result.requestedRadiusKm,
+    radiusKm: result.radiusKm,
+    radiusExpanded: result.radiusExpanded,
+    shops: result.shops,
   });
 });
 

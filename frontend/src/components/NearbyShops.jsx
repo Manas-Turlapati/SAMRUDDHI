@@ -5,6 +5,8 @@ export default function NearbyShops({
   onFindShops,
   fertilizer = "",
   searched = false,
+  radiusKm = 10,
+  radiusExpanded = false,
 }) {
   return (
     <section className="nearby-shops notranslate" translate="no">
@@ -19,12 +21,15 @@ export default function NearbyShops({
       </button>
 
       {fertilizer && <p className="shop-query">Recommended fertilizer: {fertilizer}</p>}
+      {searched && radiusExpanded && (
+        <p className="shop-query">Expanded search radius to {radiusKm} km to show at least 3 listed shops.</p>
+      )}
       {error && <div className="error-message shop-message">{error}</div>}
 
       {searched && !loading && !error && shops.length === 0 && (
         <div className="empty-state shop-empty">
-          <h2>No nearby shops within 10 km</h2>
-          <p>No listed seller is close enough right now. Try from the field location or add local shop details.</p>
+          <h2>No listed shops found</h2>
+          <p>No seller is available in the current shop dataset for this location.</p>
         </div>
       )}
 

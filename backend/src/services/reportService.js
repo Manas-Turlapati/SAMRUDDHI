@@ -99,9 +99,11 @@ const createPredictionReport = ({ prediction, user }) => {
 
   addSectionTitle(doc, "Fertilizer Recommendation");
   addKeyValue(doc, "Fertilizer", recommendation.fertilizer);
+  addKeyValue(doc, "NPK", recommendation.npk);
   addKeyValue(doc, "Dosage", recommendation.dosage);
   addKeyValue(doc, "Application Method", recommendation.application_method);
   addKeyValue(doc, "Frequency", recommendation.frequency);
+  addKeyValue(doc, "Reason", recommendation.reason);
 
   addSectionTitle(doc, "Preventive Steps");
   doc.fillColor("#17231c").font("Helvetica").fontSize(11);

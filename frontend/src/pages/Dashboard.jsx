@@ -16,9 +16,14 @@ export default function Dashboard() {
   const [downloadingReport, setDownloadingReport] = useState(false);
   const [loadingShops, setLoadingShops] = useState(false);
   const [shops, setShops] = useState([]);
+  const [shopRadiusKm, setShopRadiusKm] = useState(10);
+  const [shopRadiusExpanded, setShopRadiusExpanded] = useState(false);
   const [searchedShops, setSearchedShops] = useState(false);
   const [shopError, setShopError] = useState("");
   const [message, setMessage] = useState("");
+  const [weatherRisk, setWeatherRisk] = useState(null);
+  const [weatherRiskLoading, setWeatherRiskLoading] = useState(false);
+  const [weatherRiskError, setWeatherRiskError] = useState("");
 
   useEffect(() => {
     return () => {
@@ -44,8 +49,12 @@ export default function Dashboard() {
     setResult(null);
     setPredictionId("");
     setShops([]);
+    setShopRadiusKm(10);
+    setShopRadiusExpanded(false);
     setSearchedShops(false);
     setShopError("");
+    setWeatherRisk(null);
+    setWeatherRiskError("");
   };
 
   const handleRemove = () => {
@@ -57,9 +66,49 @@ export default function Dashboard() {
     setResult(null);
     setPredictionId("");
     setShops([]);
+    setShopRadiusKm(10);
+    setShopRadiusExpanded(false);
     setSearchedShops(false);
     setShopError("");
+    setWeatherRisk(null);
+    setWeatherRiskError("");
     setMessage("");
+  };
+
+  const analyzeWeatherRisk = async (event, diseaseOverride) => {
+    event?.preventDefault();
+
+    const disease = diseaseOverride || result?.prediction?.disease;
+
+    if (!disease) {
+      setWeatherRiskError("Run disease prediction before checking weather risk.");
+      return;
+    }
+
+    setWeatherRiskLoading(true);
+    setWeatherRiskError("");
+
+    try {
+      const position = await getCurrentLocation();
+      const { latitude, longitude } = position.coords;
+      const { data } = await api.post("/weather-risk/analyze", {
+        latitude,
+        longitude,
+        disease,
+      });
+
+      setWeatherRisk(data);
+    } catch (error) {
+      if (error.code === 1) {
+        setWeatherRiskError("Location permission was denied. Allow location access to check weather disease risk.");
+      } else if (error.code === 2 || error.code === 3) {
+        setWeatherRiskError("Unable to detect your current location for weather risk.");
+      } else {
+        setWeatherRiskError(getApiError(error, "Unable to analyze weather risk. Please try again."));
+      }
+    } finally {
+      setWeatherRiskLoading(false);
+    }
   };
 
   const getCurrentLocation = () =>
@@ -123,10 +172,16 @@ export default function Dashboard() {
         recommendation: data.recommendation,
       };
       setResult(nextResult);
+      setWeatherRisk(null);
+      setWeatherRiskError("");
       setPredictionId(data.predictionId || "");
       setShops([]);
+      setShopRadiusKm(10);
+      setShopRadiusExpanded(false);
       setSearchedShops(false);
       setShopError("");
+
+      analyzeWeatherRisk(null, data.prediction?.disease);
     } catch (error) {
       setMessage(getApiError(error, "Unable to analyze the image. Please try again."));
     } finally {
@@ -159,6 +214,8 @@ export default function Dashboard() {
       });
 
       setShops(data.shops || []);
+      setShopRadiusKm(data.radiusKm || 10);
+      setShopRadiusExpanded(Boolean(data.radiusExpanded));
       setSearchedShops(true);
     } catch (error) {
       if (error.code === 1) {
@@ -188,6 +245,30 @@ export default function Dashboard() {
         </div>
       </section>
 
+      <section className="farmer-steps" aria-label="How to use disease analysis">
+        <article>
+          <span>1</span>
+          <div>
+            <h2>Upload leaf photo</h2>
+            <p>Select a clear image of one crop leaf with visible symptoms.</p>
+          </div>
+        </article>
+        <article>
+          <span>2</span>
+          <div>
+            <h2>Run analysis</h2>
+            <p>Get disease prediction, fertilizer guidance, and weather risk from your current location.</p>
+          </div>
+        </article>
+        <article>
+          <span>3</span>
+          <div>
+            <h2>Find nearby shops</h2>
+            <p>Use location access to find fertilizer sellers and open directions or call options.</p>
+          </div>
+        </article>
+      </section>
+
       {message && <div className="error-message dashboard-message">{message}</div>}
       {loading && <Loading label="Analyzing leaf..." />}
 
@@ -197,6 +278,10 @@ export default function Dashboard() {
           result={result}
           onDownloadReport={predictionId ? downloadReport : undefined}
           downloadingReport={downloadingReport}
+          onAnalyzeWeatherRisk={analyzeWeatherRisk}
+          weatherRisk={weatherRisk}
+          weatherRiskLoading={weatherRiskLoading}
+          weatherRiskError={weatherRiskError}
         />
       </div>
 
@@ -207,6 +292,8 @@ export default function Dashboard() {
           error={shopError}
           searched={searchedShops}
           fertilizer={result.recommendation?.fertilizer}
+          radiusKm={shopRadiusKm}
+          radiusExpanded={shopRadiusExpanded}
           onFindShops={findNearbyShops}
         />
       )}

@@ -1,3 +1,5 @@
+import WeatherRiskPanel from "./WeatherRiskPanel";
+
 const asPercent = (confidence) => {
   const numeric = Number(confidence);
   if (Number.isNaN(numeric)) return "Not available";
@@ -8,6 +10,10 @@ export default function PredictionResult({
   result,
   onDownloadReport,
   downloadingReport = false,
+  onAnalyzeWeatherRisk,
+  weatherRisk,
+  weatherRiskLoading = false,
+  weatherRiskError = "",
 }) {
   if (!result) {
     return (
@@ -58,6 +64,14 @@ export default function PredictionResult({
           <strong>{recommendation?.frequency || "Not available"}</strong>
         </article>
       </div>
+
+      <WeatherRiskPanel
+        onAnalyze={onAnalyzeWeatherRisk}
+        loading={weatherRiskLoading}
+        error={weatherRiskError}
+        weatherRisk={weatherRisk}
+        disabled={!prediction?.disease}
+      />
     </section>
   );
 }

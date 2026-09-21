@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 
 const Prediction = require("../models/Prediction");
+const { getDiseaseInformation } = require("../services/diseaseInfoService");
+const { recommendFertilizer } = require("../services/fertilizerRecommendationService");
 const predictLeaf = require("../services/mlService");
 const { createPredictionReport } = require("../services/reportService");
 
@@ -12,13 +14,26 @@ const predict = asyncHandler(async (req, res) => {
 
   // Send image to Python ML service
   const result = await predictLeaf(req.file);
+  const disease = result.prediction.disease;
+  const confidence = result.prediction.confidence;
+  const diseaseInformation = getDiseaseInformation(disease);
+  const fertilizerRecommendation = recommendFertilizer({
+    crop: req.body.crop || diseaseInformation.crop,
+    disease,
+    nitrogen: req.body.nitrogen ?? req.body.N,
+    phosphorus: req.body.phosphorus ?? req.body.P,
+    potassium: req.body.potassium ?? req.body.K,
+    ph: req.body.ph ?? req.body.pH,
+    growthStage: req.body.growth_stage || req.body.growthStage,
+  });
 
   const prediction = await Prediction.create({
     user: req.user._id,
     imageName: req.file.originalname,
-    disease: result.prediction.disease,
-    confidence: result.prediction.confidence,
-    recommendation: result.recommendation,
+    disease,
+    confidence,
+    diseaseInformation,
+    recommendation: fertilizerRecommendation,
   });
 
   res.status(200).json({
@@ -28,6 +43,8 @@ const predict = asyncHandler(async (req, res) => {
       disease: prediction.disease,
       confidence: prediction.confidence,
     },
+    disease_information: prediction.diseaseInformation,
+    fertilizer_recommendation: prediction.recommendation,
     recommendation: prediction.recommendation,
   });
 });

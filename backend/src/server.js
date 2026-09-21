@@ -1,11 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const translationRoutes = require("./routes/translationRoutes");
 const shopRoutes = require("./routes/shopRoutes");
+const weatherRiskRoutes = require("./routes/weatherRiskRoutes");
+const errorHandler = require("./middleware/errorMiddleware");
 const app = express();
 
 // MUST come before routes
@@ -35,10 +38,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
+app.use("/api/weather-risk", weatherRiskRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,
     message: "Backend is running",
   });
 });
+
+app.use(errorHandler);
 

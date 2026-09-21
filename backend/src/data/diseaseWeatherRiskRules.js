@@ -1,0 +1,96 @@
+const diseaseWeatherRiskRules = {
+  "apple scab": {
+    displayName: "Apple Scab",
+    favorableTemperature: { min: 16, max: 24, weight: 25 },
+    highHumidity: { min: 85, weight: 30 },
+    rainfall: { min: 2, weight: 25 },
+    lowWind: { max: 12, weight: 10 },
+    baseline: 10,
+  },
+  "apple black rot": {
+    displayName: "Apple Black Rot",
+    favorableTemperature: { min: 20, max: 30, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 2, weight: 25 },
+    lowWind: { max: 12, weight: 10 },
+    baseline: 10,
+  },
+  "grape black rot": {
+    displayName: "Grape Black Rot",
+    favorableTemperature: { min: 20, max: 30, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 2, weight: 25 },
+    lowWind: { max: 12, weight: 10 },
+    baseline: 10,
+  },
+  "tomato early blight": {
+    displayName: "Tomato Early Blight",
+    favorableTemperature: { min: 20, max: 30, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 1, weight: 20 },
+    lowWind: { max: 10, weight: 10 },
+    baseline: 15,
+  },
+  "tomato late blight": {
+    displayName: "Tomato Late Blight",
+    favorableTemperature: { min: 12, max: 24, weight: 25 },
+    highHumidity: { min: 85, weight: 35 },
+    rainfall: { min: 1, weight: 25 },
+    lowWind: { max: 10, weight: 5 },
+    baseline: 10,
+  },
+  "tomato bacterial spot": {
+    displayName: "Tomato Bacterial Spot",
+    favorableTemperature: { min: 20, max: 32, weight: 25 },
+    highHumidity: { min: 75, weight: 25 },
+    rainfall: { min: 1, weight: 30 },
+    lowWind: { max: 10, weight: 10 },
+    baseline: 10,
+  },
+  "tomato septoria leaf spot": {
+    displayName: "Tomato Septoria Leaf Spot",
+    favorableTemperature: { min: 18, max: 28, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 1, weight: 25 },
+    lowWind: { max: 10, weight: 10 },
+    baseline: 10,
+  },
+  "potato early blight": {
+    displayName: "Potato Early Blight",
+    favorableTemperature: { min: 20, max: 30, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 1, weight: 20 },
+    lowWind: { max: 10, weight: 10 },
+    baseline: 15,
+  },
+  "potato late blight": {
+    displayName: "Potato Late Blight",
+    favorableTemperature: { min: 12, max: 24, weight: 25 },
+    highHumidity: { min: 85, weight: 35 },
+    rainfall: { min: 1, weight: 25 },
+    lowWind: { max: 10, weight: 5 },
+    baseline: 10,
+  },
+  "corn common rust": {
+    displayName: "Corn Common Rust",
+    favorableTemperature: { min: 16, max: 25, weight: 25 },
+    highHumidity: { min: 80, weight: 30 },
+    rainfall: { min: 1, weight: 20 },
+    lowWind: { max: 12, weight: 10 },
+    baseline: 15,
+  },
+};
+
+const defaultWeatherRiskRule = {
+  displayName: "General Leaf Disease",
+  favorableTemperature: { min: 18, max: 30, weight: 20 },
+  highHumidity: { min: 80, weight: 30 },
+  rainfall: { min: 1, weight: 25 },
+  lowWind: { max: 10, weight: 10 },
+  baseline: 15,
+};
+
+module.exports = {
+  diseaseWeatherRiskRules,
+  defaultWeatherRiskRule,
+};

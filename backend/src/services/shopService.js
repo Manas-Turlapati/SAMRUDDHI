@@ -99,9 +99,11 @@ const getNearbyShops = ({ latitude, longitude, fertilizer, limit = 5, radiusKm =
 
   const requestedFertilizer = normalize(fertilizer);
 
-  const maxDistanceKm = Number(radiusKm) || 10;
+  const requestedRadiusKm = Number(radiusKm) || 10;
+  const resultLimit = Number(limit) || 5;
+  const minimumVisibleShops = Math.min(3, resultLimit, shops.length);
 
-  return shops
+  const rankedShops = shops
     .map((shop) => {
       const distanceKm = getDistanceKm(farmerLocation, shop);
       const hasRecommendedFertilizer = shop.fertilizersAvailable.some((item) =>
@@ -115,15 +117,27 @@ const getNearbyShops = ({ latitude, longitude, fertilizer, limit = 5, radiusKm =
         directionsUrl: `https://www.google.com/maps/dir/?api=1&destination=${shop.latitude},${shop.longitude}`,
       };
     })
-    .filter((shop) => shop.distanceKm <= maxDistanceKm)
     .sort((first, second) => {
       if (first.hasRecommendedFertilizer !== second.hasRecommendedFertilizer) {
         return first.hasRecommendedFertilizer ? -1 : 1;
       }
 
       return first.distanceKm - second.distanceKm;
-    })
-    .slice(0, Number(limit) || 5);
+    });
+
+  const shopsInsideRequestedRadius = rankedShops.filter((shop) => shop.distanceKm <= requestedRadiusKm);
+  const effectiveRadiusKm =
+    shopsInsideRequestedRadius.length >= minimumVisibleShops
+      ? requestedRadiusKm
+      : rankedShops[minimumVisibleShops - 1]?.distanceKm || requestedRadiusKm;
+  const roundedEffectiveRadiusKm = Math.ceil(effectiveRadiusKm * 10) / 10;
+
+  return {
+    requestedRadiusKm,
+    radiusKm: roundedEffectiveRadiusKm,
+    radiusExpanded: roundedEffectiveRadiusKm > requestedRadiusKm,
+    shops: rankedShops.filter((shop) => shop.distanceKm <= roundedEffectiveRadiusKm).slice(0, resultLimit),
+  };
 };
 
 module.exports = {
