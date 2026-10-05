@@ -37,7 +37,7 @@ const predictLeaf = async (file) => {
 
   const form = new FormData();
 
-  form.append("file", file.buffer, {
+  form.append("image", file.buffer, {
     filename: file.originalname,
     contentType: file.mimetype,
   });
