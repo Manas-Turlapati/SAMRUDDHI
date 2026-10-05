@@ -44,15 +44,15 @@ export default function Login() {
         <h1>Login</h1>
         <p>Continue to your leaf analysis dashboard.</p>
 
-        <form onSubmit={handleSubmit} className="form-stack">
+        <form onSubmit={handleSubmit} className="form-stack" autoComplete="off">
           <label>
             Email
             <input
               type="email"
               value={form.email}
               onChange={(event) => setForm({ ...form, email: event.target.value })}
-              placeholder="manas@gmail.com"
-              autoComplete="email"
+              placeholder="Enter email"
+              autoComplete="off"
             />
           </label>
           <label>
@@ -63,7 +63,7 @@ export default function Login() {
                 value={form.password}
                 onChange={(event) => setForm({ ...form, password: event.target.value })}
                 placeholder="Enter password"
-                autoComplete="current-password"
+                autoComplete="new-password"
               />
               <button type="button" onClick={() => setShowPassword((value) => !value)}>
                 {showPassword ? "Hide" : "Show"}
