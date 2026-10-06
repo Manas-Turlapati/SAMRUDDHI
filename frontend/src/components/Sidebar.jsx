@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 const items = [
   { to: "/dashboard", icon: "D", label: "Dashboard" },
   { to: "/history", icon: "H", label: "History" },
+  { to: "/subsidies", icon: "S", label: "Subsidies" },
   { to: "/profile", icon: "P", label: "Profile" },
 ];
 

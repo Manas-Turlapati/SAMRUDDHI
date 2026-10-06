@@ -24,6 +24,7 @@ export default function Navbar() {
         <nav className="topbar-nav" aria-label="Application">
           <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/history">History</NavLink>
+          <NavLink to="/subsidies">Subsidies</NavLink>
           <NavLink to="/profile">Profile</NavLink>
           <button type="button" className="text-button" onClick={handleLogout}>
             Logout

@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 
-load_dotenv()
+BASE_DIR = Path(__file__).resolve().parent
+
+load_dotenv(BASE_DIR / ".env")
 
 from services.disease_prediction import DiseaseModel
 from services.fertilizer_recommendation import get_recommendation
@@ -24,6 +27,8 @@ MODEL_PATH = os.environ.get(
     "MODEL_PATH",
     "models/disease_model.pth",
 )
+
+MODEL_PATH = str((BASE_DIR / MODEL_PATH).resolve()) if not os.path.isabs(MODEL_PATH) else MODEL_PATH
 
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 

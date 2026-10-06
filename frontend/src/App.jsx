@@ -10,6 +10,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
+import Subsidies from "./pages/Subsidies";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, checkingAuth } = useAuth();
@@ -90,6 +91,16 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <History />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subsidies"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <Subsidies />
               </AppLayout>
             </ProtectedRoute>
           }

@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, ".env") });
+const dotenv = require("dotenv");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
@@ -9,6 +9,10 @@ const translationRoutes = require("./routes/translationRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const weatherRiskRoutes = require("./routes/weatherRiskRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
+
+dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, "..", ".env") });
+
 const app = express();
 
 // MUST come before routes
@@ -39,6 +43,14 @@ app.use("/api/predictions", predictionRoutes);
 app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/weather-risk", weatherRiskRoutes);
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    backend: "running",
+    mlApiConfigured: Boolean(process.env.ML_API_URL),
+    mlApiUrl: process.env.ML_API_URL ? process.env.ML_API_URL.replace(/\/$/, "") : null,
+  });
+});
 app.get("/", (req, res) => {
   res.json({
     success: true,

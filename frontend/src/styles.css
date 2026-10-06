@@ -711,6 +711,223 @@ p {
   outline: none;
 }
 
+.subsidies-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.subsidies-header {
+  margin-bottom: 0;
+}
+
+.subsidy-summary,
+.subsidy-advisor,
+.subsidy-tools,
+.subsidy-card,
+.subsidy-note {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.subsidy-summary {
+  display: grid;
+  min-width: 11rem;
+  padding: 1rem;
+  text-align: right;
+}
+
+.subsidy-summary strong {
+  color: var(--green-900);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.subsidy-summary span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.subsidy-advisor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.45fr);
+  gap: 1rem;
+  align-items: center;
+  padding: 1.2rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(220, 235, 221, 0.48)),
+    rgba(255, 255, 255, 0.54);
+}
+
+.subsidy-advisor h2 {
+  margin-bottom: 0.35rem;
+  color: var(--green-900);
+}
+
+.subsidy-advisor p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.subsidy-advisor span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.subsidy-advisor strong {
+  display: block;
+  color: var(--green-900);
+  overflow-wrap: anywhere;
+}
+
+.subsidy-tools {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.35fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: end;
+  padding: 1rem;
+}
+
+.subsidy-tools label {
+  display: grid;
+  gap: 0.45rem;
+  color: var(--green-900);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.subsidy-tools input {
+  width: 100%;
+  min-height: 2.8rem;
+  border: 1px solid rgba(221, 228, 216, 0.86);
+  border-radius: 0.8rem;
+  padding: 0 0.85rem;
+  color: var(--green-900);
+  background: rgba(255, 255, 255, 0.78);
+  outline: none;
+}
+
+.subsidy-tools input:focus {
+  border-color: var(--green-600);
+  box-shadow: 0 0 0 4px rgba(47, 125, 73, 0.12);
+}
+
+.subsidy-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.subsidy-tabs button {
+  min-height: 2.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0 0.9rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.64);
+  font-weight: 800;
+}
+
+.subsidy-tabs button.active,
+.subsidy-tabs button:hover {
+  color: #ffffff;
+  border-color: var(--green-700);
+  background: var(--green-700);
+}
+
+.subsidy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.subsidy-card {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: 1.2rem;
+}
+
+.subsidy-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.subsidy-card-header span {
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  color: var(--green-900);
+  background: var(--green-100);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.subsidy-card-header small {
+  color: var(--muted);
+  font-weight: 800;
+  text-align: right;
+}
+
+.subsidy-card h2 {
+  margin-bottom: 0;
+  color: var(--green-900);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.subsidy-card p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.subsidy-card dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.subsidy-card dl div {
+  border-top: 1px solid var(--line);
+  padding-top: 0.75rem;
+}
+
+.subsidy-card dt {
+  margin-bottom: 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.subsidy-card dd {
+  margin: 0;
+  color: var(--green-900);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.subsidy-link {
+  margin-top: auto;
+}
+
+.subsidy-note {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  padding: 1rem;
+  color: var(--muted);
+}
+
+.subsidy-note strong {
+  flex: 0 0 auto;
+  color: var(--green-900);
+}
+
 .dashboard-message {
   margin-bottom: 1rem;
 }
@@ -1318,8 +1535,14 @@ p {
   }
 
   .weather-risk-form,
-  .weather-values {
+  .weather-values,
+  .subsidy-advisor,
+  .subsidy-tools {
     grid-template-columns: 1fr;
+  }
+
+  .subsidy-summary {
+    text-align: left;
   }
 
   .shop-actions {

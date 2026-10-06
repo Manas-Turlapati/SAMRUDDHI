@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://samruddhi-r1qe.onrender.com/api";
+
 const api = axios.create({
-  baseURL: "https://samruddhi-r1qe.onrender.com/api",
+  baseURL: API_BASE_URL,
 });
 
 api.interceptors.request.use((config) => {

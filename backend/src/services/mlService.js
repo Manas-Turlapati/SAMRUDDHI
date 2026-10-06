@@ -1,6 +1,16 @@
 const axios = require("axios");
 const FormData = require("form-data");
 
+const normalizeMlApiUrl = () => {
+  const mlApiUrl = process.env.ML_API_URL;
+
+  if (!mlApiUrl) {
+    throw new Error("ML_API_URL is not configured");
+  }
+
+  return mlApiUrl.replace(/\/$/, "").replace(/\/predict$/, "");
+};
+
 const normalizeMlError = (error) => {
   if (error.response) {
     const message =
@@ -29,11 +39,7 @@ const normalizeMlError = (error) => {
 };
 
 const predictLeaf = async (file) => {
-  const mlApiUrl = process.env.ML_API_URL;
-
-  if (!mlApiUrl) {
-    throw new Error("ML_API_URL is not configured");
-  }
+  const mlApiUrl = normalizeMlApiUrl();
 
   const form = new FormData();
 
@@ -44,7 +50,7 @@ const predictLeaf = async (file) => {
 
   try {
     const response = await axios.post(
-      `${mlApiUrl.replace(/\/$/, "")}/predict`,
+      `${mlApiUrl}/predict`,
       form,
       {
         headers: form.getHeaders(),
@@ -53,7 +59,9 @@ const predictLeaf = async (file) => {
     );
 
     if (!response.data?.prediction?.disease || response.data.prediction.confidence === undefined) {
-      const invalidResponse = new Error("ML service returned an invalid prediction response");
+      const invalidResponse = new Error(
+        `ML service returned an invalid prediction response: ${JSON.stringify(response.data).slice(0, 300)}`,
+      );
       invalidResponse.statusCode = 502;
       throw invalidResponse;
     }
