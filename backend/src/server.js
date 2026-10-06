@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
 const dotenv = require("dotenv");
+const axios = require("axios");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
@@ -50,6 +51,36 @@ app.get("/api/health", (req, res) => {
     mlApiConfigured: Boolean(process.env.ML_API_URL),
     mlApiUrl: process.env.ML_API_URL ? process.env.ML_API_URL.replace(/\/$/, "") : null,
   });
+});
+app.get("/api/health/ml", async (req, res) => {
+  const mlApiUrl = process.env.ML_API_URL?.replace(/\/$/, "").replace(/\/predict$/, "");
+
+  if (!mlApiUrl) {
+    res.status(500).json({
+      success: false,
+      message: "ML_API_URL is not configured",
+    });
+    return;
+  }
+
+  try {
+    const response = await axios.get(`${mlApiUrl}/health`, {
+      timeout: 15000,
+    });
+
+    res.json({
+      success: true,
+      mlApiUrl,
+      mlHealth: response.data,
+    });
+  } catch (error) {
+    res.status(502).json({
+      success: false,
+      mlApiUrl,
+      message: error.response?.data?.message || error.message || "Unable to reach ML service",
+      status: error.response?.status || null,
+    });
+  }
 });
 app.get("/", (req, res) => {
   res.json({

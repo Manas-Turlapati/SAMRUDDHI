@@ -54,7 +54,7 @@ const predictLeaf = async (file) => {
       form,
       {
         headers: form.getHeaders(),
-        timeout: 60000,
+        timeout: 180000,
       },
     );
 
