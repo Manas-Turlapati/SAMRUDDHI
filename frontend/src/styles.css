@@ -721,7 +721,6 @@ p {
 }
 
 .subsidy-summary,
-.subsidy-advisor,
 .subsidy-tools,
 .subsidy-card,
 .subsidy-note {
@@ -749,40 +748,6 @@ p {
 .subsidy-summary span {
   color: var(--muted);
   font-weight: 800;
-}
-
-.subsidy-advisor {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.45fr);
-  gap: 1rem;
-  align-items: center;
-  padding: 1.2rem;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(220, 235, 221, 0.48)),
-    rgba(255, 255, 255, 0.54);
-}
-
-.subsidy-advisor h2 {
-  margin-bottom: 0.35rem;
-  color: var(--green-900);
-}
-
-.subsidy-advisor p {
-  margin-bottom: 0;
-  color: var(--muted);
-}
-
-.subsidy-advisor span {
-  display: block;
-  margin-bottom: 0.35rem;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.subsidy-advisor strong {
-  display: block;
-  color: var(--green-900);
-  overflow-wrap: anywhere;
 }
 
 .subsidy-tools {
@@ -1536,7 +1501,6 @@ p {
 
   .weather-risk-form,
   .weather-values,
-  .subsidy-advisor,
   .subsidy-tools {
     grid-template-columns: 1fr;
   }

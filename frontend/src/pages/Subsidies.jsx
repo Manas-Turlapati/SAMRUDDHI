@@ -1,6 +1,16 @@
 import { useMemo, useState } from "react";
 
-const subsidyCategories = ["All", "Income", "Insurance", "Credit", "Energy", "Soil", "Equipment", "Infrastructure"];
+const subsidyCategories = [
+  "All",
+  "Income",
+  "Insurance",
+  "Credit",
+  "Fertilizer",
+  "Energy",
+  "Soil",
+  "Equipment",
+  "Infrastructure",
+];
 
 const subsidies = [
   {
@@ -34,6 +44,17 @@ const subsidies = [
     bestFor: "Farmers who need working capital for seeds, fertilizer, pesticides, and allied needs.",
   },
   {
+    name: "Fertilizer Subsidy Scheme",
+    category: "Fertilizer",
+    benefit:
+      "Subsidized fertilizers are supplied to farmers through fertilizer retailers under the Government of India's DBT in Fertilizers system.",
+    eligibility: "Farmers buying subsidized fertilizer from authorized retailers through the DBT/POS system.",
+    documents: ["Aadhaar", "mobile number", "retailer bill or purchase details"],
+    apply: "https://fert.nic.in/dbt",
+    source: "Department of Fertilizers",
+    bestFor: "Farmers purchasing urea, DAP, NPK, MOP, or other notified fertilizers at subsidized rates.",
+  },
+  {
     name: "PM-KUSUM",
     category: "Energy",
     benefit: "Subsidy support for standalone solar pumps and solarisation of existing grid-connected agriculture pumps.",
@@ -59,8 +80,8 @@ const subsidies = [
     benefit: "Central financial assistance for Women SHGs to provide drone rental services for agriculture operations.",
     eligibility: "Women Self Help Groups selected under the scheme through implementing agencies.",
     documents: ["SHG registration", "member identity details", "bank account", "training records if applicable"],
-    apply: "https://www.myscheme.gov.in/",
-    source: "myScheme",
+    apply: "https://lakhpatididi.gov.in/power_to_empower/namo-drone-didi/",
+    source: "Lakhpati Didi Portal",
     bestFor: "Women SHGs planning fertilizer and pesticide spraying as a local service.",
   },
   {
@@ -115,20 +136,6 @@ export default function Subsidies() {
         </div>
       </section>
 
-      <section className="subsidy-advisor">
-        <div>
-          <h2>Is this a good novelty?</h2>
-          <p>
-            Yes. For SAMRUDDHI, subsidies are a strong novelty because disease detection tells farmers what is wrong,
-            while subsidy discovery helps them afford the next action.
-          </p>
-        </div>
-        <div>
-          <span>Best extension</span>
-          <strong>Link future recommendations to matching schemes by crop, state, and farmer profile.</strong>
-        </div>
-      </section>
-
       <section className="subsidy-tools" aria-label="Find subsidies">
         <label>
           Search schemes
@@ -136,7 +143,7 @@ export default function Subsidies() {
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Try solar pump, insurance, soil, credit"
+            placeholder="Try fertilizer, solar pump, insurance, soil, credit"
           />
         </label>
         <div className="subsidy-tabs" role="tablist" aria-label="Subsidy categories">
