@@ -1,0 +1,10 @@
+[build]
+  base = "frontend"
+  command = "npm install && npm run build"
+  publish = "dist"
+
+# BrowserRouter: serve index.html for client-side routes (e.g. /history, /subsidies)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
