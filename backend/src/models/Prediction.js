@@ -9,6 +9,11 @@ const diseaseInformationSchema = new mongoose.Schema(
     symptoms: [String],
     causes: [String],
     treatment: [String],
+    actionableTreatment: {
+      actions: [String],
+      productSearchUrl: String,
+      labelNotice: String,
+    },
     prevention: [String],
   },
   { _id: false },
@@ -25,6 +30,13 @@ const predictionSchema = new mongoose.Schema(
     imageName: {
       type: String,
       required: true,
+    },
+
+    image: { type: Buffer, select: false },
+    imageMimeType: String,
+    location: {
+      latitude: Number,
+      longitude: Number,
     },
 
     disease: {

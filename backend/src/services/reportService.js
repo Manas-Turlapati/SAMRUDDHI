@@ -88,12 +88,16 @@ const createPredictionReport = ({ prediction, user }) => {
   addSectionTitle(doc, "Farmer Details");
   addKeyValue(doc, "Name", user?.name);
   addKeyValue(doc, "Email", user?.email);
+  if (user?.phone) addKeyValue(doc, "Phone", user.phone);
 
   addSectionTitle(doc, "Prediction Summary");
   addKeyValue(doc, "Image", prediction.imageName);
   addKeyValue(doc, "Prediction Date", formatDate(prediction.createdAt));
   addKeyValue(doc, "Disease", prediction.disease);
   addKeyValue(doc, "Confidence", asPercent(prediction.confidence));
+  if (Number.isFinite(prediction.location?.latitude) && Number.isFinite(prediction.location?.longitude)) {
+    addKeyValue(doc, "Approximate GPS", `${prediction.location.latitude}, ${prediction.location.longitude}`);
+  }
   addKeyValue(doc, "Severity", severity.label);
   addKeyValue(doc, "Immediate Action", severity.action);
 
@@ -104,6 +108,15 @@ const createPredictionReport = ({ prediction, user }) => {
   addKeyValue(doc, "Application Method", recommendation.application_method);
   addKeyValue(doc, "Frequency", recommendation.frequency);
   addKeyValue(doc, "Reason", recommendation.reason);
+
+  const treatment = prediction.diseaseInformation?.actionableTreatment;
+  if (treatment?.actions?.length) {
+    addSectionTitle(doc, "Treatment Guidance");
+    doc.fillColor("#17231c").font("Helvetica").fontSize(11);
+    treatment.actions.forEach((step, index) => doc.text(`${index + 1}. ${step}`, { indent: 12, paragraphGap: 6 }));
+    doc.moveDown(0.5);
+    doc.fillColor("#667568").fontSize(9).text(treatment.labelNotice || "Follow local expert advice and registered product labels.");
+  }
 
   addSectionTitle(doc, "Preventive Steps");
   doc.fillColor("#17231c").font("Helvetica").fontSize(11);

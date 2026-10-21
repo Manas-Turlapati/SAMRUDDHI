@@ -1,15 +1,28 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const handleGoogleCredential = async (credential) => {
+    setLoading(true);
+    setError("");
+    try {
+      await googleLogin(credential);
+      navigate(location.state?.from?.pathname || "/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -77,6 +90,8 @@ export default function Login() {
             {loading ? "Signing in..." : "Login"}
           </button>
         </form>
+
+        <GoogleSignInButton onCredential={handleGoogleCredential} onError={setError} />
 
         <p className="auth-switch">
           New here? <Link to="/register">Create an account</Link>

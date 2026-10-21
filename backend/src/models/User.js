@@ -19,11 +19,12 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: function () { return !this.googleId; },
       minlength: 6,
       select: false,
     },
 
+    googleId: { type: String, unique: true, sparse: true },
     role: {
       type: String,
       enum: ["USER", "ADMIN"],

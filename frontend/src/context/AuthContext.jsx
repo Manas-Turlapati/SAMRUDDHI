@@ -74,6 +74,16 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const googleLogin = async (credential) => {
+    try {
+      const { data } = await api.post("/auth/google", { credential });
+      persistSession(data.token, data.user);
+      return data;
+    } catch (error) {
+      throw new Error(getApiError(error, "Unable to sign in with Google. Please try again."));
+    }
+  };
+
   const logout = async () => {
     try {
       if (token) {
@@ -95,6 +105,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(token && user),
       register,
       login,
+      googleLogin,
       logout,
     }),
     [token, user, checkingAuth],

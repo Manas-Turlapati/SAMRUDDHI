@@ -2,20 +2,28 @@ import React, { useEffect, useState } from "react";
 import api, { getApiError } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import Loading from "../components/Loading";
+import ScanMap from "../components/ScanMap";
+import ReportDeliveryDialog from "../components/ReportDeliveryDialog";
 
 export default function History() {
   const { isAuthenticated } = useAuth();
   const [historyData, setHistoryData] = useState([]);
+  const [mapData, setMapData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deliveryPredictionId, setDeliveryPredictionId] = useState("");
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await api.get("/predictions/history");
+        const [response, mapResponse] = await Promise.all([
+          api.get("/predictions/history"),
+          api.get("/predictions/map"),
+        ]);
 
         if (response.data.success) {
           setHistoryData(response.data.predictions);
+          setMapData(mapResponse.data.predictions || []);
         }
       } catch (err) {
         console.error("History fetch error:", err);
@@ -46,6 +54,7 @@ export default function History() {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      setDeliveryPredictionId(predictionId);
     } catch (err) {
       console.error("PDF generation failure:", err);
       alert("Error generating PDF download.");
@@ -86,6 +95,10 @@ export default function History() {
           {error}
         </div>
       )}
+
+      {deliveryPredictionId && <ReportDeliveryDialog predictionId={deliveryPredictionId} onClose={() => setDeliveryPredictionId("")} />}
+
+      <ScanMap predictions={mapData} />
 
       {historyData.length === 0 ? (
         <div

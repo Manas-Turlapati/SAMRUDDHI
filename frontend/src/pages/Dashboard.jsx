@@ -3,6 +3,7 @@ import ImageUpload from "../components/ImageUpload";
 import Loading from "../components/Loading";
 import NearbyShops from "../components/NearbyShops";
 import PredictionResult from "../components/PredictionResult";
+import ReportDeliveryDialog from "../components/ReportDeliveryDialog";
 import { useAuth } from "../context/AuthContext";
 import api, { getApiError } from "../services/api";
 
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const [predictionId, setPredictionId] = useState("");
   const [loading, setLoading] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
   const [loadingShops, setLoadingShops] = useState(false);
   const [shops, setShops] = useState([]);
   const [shopRadiusKm, setShopRadiusKm] = useState(10);
@@ -24,6 +26,10 @@ export default function Dashboard() {
   const [weatherRisk, setWeatherRisk] = useState(null);
   const [weatherRiskLoading, setWeatherRiskLoading] = useState(false);
   const [weatherRiskError, setWeatherRiskError] = useState("");
+  const [shareLocation, setShareLocation] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [expertStatus, setExpertStatus] = useState("");
+  const [expertLoading, setExpertLoading] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -48,6 +54,8 @@ export default function Dashboard() {
     setPreview(URL.createObjectURL(selectedFile));
     setResult(null);
     setPredictionId("");
+    setDeliveryOpen(false);
+    setDeliveryStatus("");
     setShops([]);
     setShopRadiusKm(10);
     setShopRadiusExpanded(false);
@@ -144,6 +152,7 @@ export default function Dashboard() {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
+      setDeliveryOpen(true);
     } catch (error) {
       setMessage(getApiError(error, "Unable to download report. Please try again."));
     } finally {
@@ -164,13 +173,24 @@ export default function Dashboard() {
 
     setLoading(true);
     try {
+      if (shareLocation) {
+        try {
+          const position = await getCurrentLocation();
+          formData.append("latitude", String(position.coords.latitude));
+          formData.append("longitude", String(position.coords.longitude));
+        } catch {
+          setMessage("Location was not available; analysis will continue without adding this scan to the map.");
+        }
+      }
       const { data } = await api.post("/predictions/predict", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const nextResult = {
         prediction: data.prediction,
         recommendation: data.recommendation,
+        diseaseInformation: data.disease_information,
       };
+      setMessage("Analysis completed. Your report is available to download.");
       setResult(nextResult);
       setWeatherRisk(null);
       setWeatherRiskError("");
@@ -186,6 +206,23 @@ export default function Dashboard() {
       setMessage(getApiError(error, "Unable to analyze the image. Please try again."));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const consultExpert = async () => {
+    if (!phone.trim()) {
+      setExpertStatus("Enter a phone number so the expert can contact you.");
+      return;
+    }
+    setExpertLoading(true);
+    setExpertStatus("");
+    try {
+      const { data } = await api.post(`/predictions/${predictionId}/consult-expert`, { phone: phone.trim() });
+      setExpertStatus(data.message);
+    } catch (error) {
+      setExpertStatus(getApiError(error, "Unable to send this report to an expert."));
+    } finally {
+      setExpertLoading(false);
     }
   };
 
@@ -245,6 +282,8 @@ export default function Dashboard() {
         </div>
       </section>
 
+      <label className="location-consent"><input type="checkbox" checked={shareLocation} onChange={(event) => setShareLocation(event.target.checked)} /> Share my approximate GPS location with this diagnosis to help map disease reports.</label>
+
       <section className="farmer-steps" aria-label="How to use disease analysis">
         <article>
           <span>1</span>
@@ -282,8 +321,15 @@ export default function Dashboard() {
           weatherRisk={weatherRisk}
           weatherRiskLoading={weatherRiskLoading}
           weatherRiskError={weatherRiskError}
+          onConsultExpert={consultExpert}
+          phone={phone}
+          setPhone={setPhone}
+          expertStatus={expertStatus}
+          expertLoading={expertLoading}
         />
       </div>
+
+      {deliveryOpen && <ReportDeliveryDialog predictionId={predictionId} onClose={() => setDeliveryOpen(false)} />}
 
       {result && (
         <NearbyShops
