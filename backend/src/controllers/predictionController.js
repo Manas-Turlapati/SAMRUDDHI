@@ -1,30 +1,11 @@
 const asyncHandler = require("express-async-handler");
-const axios = require("axios");
-const crypto = require("crypto");
 
 const Prediction = require("../models/Prediction");
-const User = require("../models/User");
 const { getDiseaseInformation } = require("../services/diseaseInfoService");
 const { recommendFertilizer } = require("../services/fertilizerRecommendationService");
 const predictLeaf = require("../services/mlService");
 const { createPredictionReport } = require("../services/reportService");
 
-const getDeliveryToken = (predictionId, expiresAt) => {
-  const secret = process.env.REPORT_DELIVERY_SECRET || process.env.JWT_SECRET;
-  if (!secret) throw new Error("Report delivery signing is not configured.");
-  const signature = crypto.createHmac("sha256", secret).update(`${predictionId}:${expiresAt}`).digest("hex");
-  return `${expiresAt}.${signature}`;
-};
-
-const verifyDeliveryToken = (predictionId, token) => {
-  const [expiryText, signature] = String(token || "").split(".");
-  const expiresAt = Number(expiryText);
-  if (!Number.isSafeInteger(expiresAt) || expiresAt < Date.now() || expiresAt > Date.now() + 15 * 60 * 1000 || !signature) return false;
-  const expected = getDeliveryToken(predictionId, expiresAt).split(".")[1];
-  const actualBuffer = Buffer.from(signature, "hex");
-  const expectedBuffer = Buffer.from(expected, "hex");
-  return actualBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(actualBuffer, expectedBuffer);
-};
 const predict = asyncHandler(async (req, res) => {
   if (!req.file) {
     res.status(400);
@@ -126,82 +107,6 @@ const downloadReport = asyncHandler(async (req, res) => {
   doc.end();
 });
 
-const sendReport = asyncHandler(async (req, res) => {
-  const recipient = String(req.body.recipient || "").trim();
-  const prediction = await Prediction.findOne({ _id: req.params.id, user: req.user._id });
-  if (!prediction) {
-    res.status(404);
-    throw new Error("Prediction report not found");
-  }
-  if (!recipient) {
-    res.status(400);
-    throw new Error("Enter a WhatsApp phone number.");
-  }
-  if (!/^\+[1-9]\d{7,14}$/.test(recipient)) {
-    res.status(400);
-    throw new Error("Enter the WhatsApp number in international format, for example +919876543210.");
-  }
-  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM, TWILIO_WHATSAPP_CONTENT_SID } = process.env;
-  if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_WHATSAPP_FROM || !TWILIO_WHATSAPP_CONTENT_SID) {
-    res.status(503);
-    throw new Error("WhatsApp delivery needs Twilio credentials, an approved PDF media template, and a WhatsApp sender.");
-  }
-  const expiresAt = Date.now() + 10 * 60 * 1000;
-  const token = getDeliveryToken(prediction._id.toString(), expiresAt);
-  const deliveryKey = `${prediction._id}-${token}`.replace(".", "-");
-  const form = new URLSearchParams({
-    To: `whatsapp:${recipient}`,
-    From: TWILIO_WHATSAPP_FROM.startsWith("whatsapp:") ? TWILIO_WHATSAPP_FROM : `whatsapp:${TWILIO_WHATSAPP_FROM}`,
-    ContentSid: TWILIO_WHATSAPP_CONTENT_SID,
-    ContentVariables: JSON.stringify({ "1": deliveryKey, "2": prediction.disease, "3": `${Math.round((Number(prediction.confidence) <= 1 ? Number(prediction.confidence) * 100 : Number(prediction.confidence)) * 10) / 10}` }),
-  });
-  try {
-    await axios.post(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`, form, {
-      auth: { username: TWILIO_ACCOUNT_SID, password: TWILIO_AUTH_TOKEN },
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      timeout: 20000,
-    });
-  } catch (error) {
-    const twilioCode = Number(error.response?.data?.code);
-    if (twilioCode === 21655 || twilioCode === 92006) {
-      res.status(502);
-      throw new Error(
-        "Twilio rejected the WhatsApp template. Set TWILIO_WHATSAPP_CONTENT_SID to an active Content Template SID (starts with HX) owned by the same Twilio account as TWILIO_ACCOUNT_SID. Update the backend's deployed environment and restart it.",
-      );
-    }
-    const detail = error.response?.data?.message;
-    res.status(502);
-    throw new Error(detail || "WhatsApp could not deliver the report. Check the recipient and Twilio WhatsApp setup.");
-  }
-
-  res.json({ success: true, message: "Report sent through WhatsApp." });
-});
-
-const downloadDeliveryReport = asyncHandler(async (req, res) => {
-  const match = /^([a-f\d]{24})-(\d{13})-([a-f\d]{64})$/i.exec(req.params.deliveryKey || "");
-  const predictionId = match?.[1];
-  const token = match ? `${match[2]}.${match[3]}` : "";
-  if (!predictionId || !verifyDeliveryToken(predictionId, token)) {
-    res.status(403);
-    throw new Error("This report delivery link is invalid or has expired.");
-  }
-  const prediction = await Prediction.findById(predictionId);
-  if (!prediction) {
-    res.status(404);
-    throw new Error("Prediction report not found");
-  }
-  const user = await User.findById(prediction.user);
-  if (!user) {
-    res.status(404);
-    throw new Error("Report owner not found");
-  }
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="samruddhi-report-${prediction._id}.pdf"`);
-  const doc = createPredictionReport({ prediction, user });
-  doc.pipe(res);
-  doc.end();
-});
-
 const consultExpert = asyncHandler(async (req, res) => {
   res.status(503);
   res.json({ success: false, message: "Expert referrals are temporarily unavailable." });
@@ -212,7 +117,5 @@ module.exports = {
   getHistory,
   getDiseaseMap,
   downloadReport,
-  sendReport,
-  downloadDeliveryReport,
   consultExpert,
 };
