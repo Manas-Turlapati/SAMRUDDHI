@@ -89,6 +89,12 @@ def health():
     }
 
 
+# Keep the root URL useful for Render health checks and service probes.
+@app.get("/")
+def root():
+    return health()
+
+
 # Disease prediction
 @app.post("/predict")
 async def predict(image: UploadFile = File(...)):
