@@ -3,6 +3,7 @@ import ImageUpload from "../components/ImageUpload";
 import Loading from "../components/Loading";
 import NearbyShops from "../components/NearbyShops";
 import PredictionResult from "../components/PredictionResult";
+import DiagnosisReviewStatus from "../components/DiagnosisReviewStatus";
 import ReportDeliveryDialog from "../components/ReportDeliveryDialog";
 import { useAuth } from "../context/AuthContext";
 import api, { getApiError } from "../services/api";
@@ -13,6 +14,7 @@ export default function Dashboard() {
   const [preview, setPreview] = useState("");
   const [result, setResult] = useState(null);
   const [predictionId, setPredictionId] = useState("");
+  const [diagnosisId, setDiagnosisId] = useState("");
   const [loading, setLoading] = useState(false);
   const [downloadingReport, setDownloadingReport] = useState(false);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
@@ -27,9 +29,6 @@ export default function Dashboard() {
   const [weatherRiskLoading, setWeatherRiskLoading] = useState(false);
   const [weatherRiskError, setWeatherRiskError] = useState("");
   const [shareLocation, setShareLocation] = useState(false);
-  const [phone, setPhone] = useState("");
-  const [expertStatus, setExpertStatus] = useState("");
-  const [expertLoading, setExpertLoading] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -54,8 +53,8 @@ export default function Dashboard() {
     setPreview(URL.createObjectURL(selectedFile));
     setResult(null);
     setPredictionId("");
+    setDiagnosisId("");
     setDeliveryOpen(false);
-    setDeliveryStatus("");
     setShops([]);
     setShopRadiusKm(10);
     setShopRadiusExpanded(false);
@@ -73,6 +72,7 @@ export default function Dashboard() {
     setPreview("");
     setResult(null);
     setPredictionId("");
+    setDiagnosisId("");
     setShops([]);
     setShopRadiusKm(10);
     setShopRadiusExpanded(false);
@@ -195,6 +195,7 @@ export default function Dashboard() {
       setWeatherRisk(null);
       setWeatherRiskError("");
       setPredictionId(data.predictionId || "");
+      setDiagnosisId(data.diagnosisId || "");
       setShops([]);
       setShopRadiusKm(10);
       setShopRadiusExpanded(false);
@@ -206,23 +207,6 @@ export default function Dashboard() {
       setMessage(getApiError(error, "Unable to analyze the image. Please try again."));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const consultExpert = async () => {
-    if (!phone.trim()) {
-      setExpertStatus("Enter a phone number so the expert can contact you.");
-      return;
-    }
-    setExpertLoading(true);
-    setExpertStatus("");
-    try {
-      const { data } = await api.post(`/predictions/${predictionId}/consult-expert`, { phone: phone.trim() });
-      setExpertStatus(data.message);
-    } catch (error) {
-      setExpertStatus(getApiError(error, "Unable to send this report to an expert."));
-    } finally {
-      setExpertLoading(false);
     }
   };
 
@@ -321,13 +305,10 @@ export default function Dashboard() {
           weatherRisk={weatherRisk}
           weatherRiskLoading={weatherRiskLoading}
           weatherRiskError={weatherRiskError}
-          onConsultExpert={consultExpert}
-          phone={phone}
-          setPhone={setPhone}
-          expertStatus={expertStatus}
-          expertLoading={expertLoading}
         />
       </div>
+
+      {diagnosisId && <DiagnosisReviewStatus diagnosisId={diagnosisId} />}
 
       {deliveryOpen && <ReportDeliveryDialog predictionId={predictionId} onClose={() => setDeliveryOpen(false)} />}
 

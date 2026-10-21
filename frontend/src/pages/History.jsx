@@ -199,7 +199,7 @@ export default function History() {
                   <td style={{ padding: "14px" }}>
                     <span
                       style={{
-                        color: item.confidence > 0.8 ? "#22c55e" : "#eab308",
+                        color: item.confidence > 0.7 ? "#22c55e" : "#eab308",
                         fontWeight: "500",
                       }}
                     >

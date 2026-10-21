@@ -1,11 +1,18 @@
 const express = require("express");
+const http = require("http");
 const mongoose = require("mongoose");
 const path = require("path");
 const dotenv = require("dotenv");
 const axios = require("axios");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const { Server } = require("socket.io");
+const User = require("./models/User");
 const authRoutes = require("./routes/authRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
+const diagnosisRoutes = require("./routes/diagnosisRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const translationRoutes = require("./routes/translationRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const weatherRiskRoutes = require("./routes/weatherRiskRoutes");
@@ -34,12 +41,29 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, { cors: { origin: process.env.FRONTEND_URL || "*" } });
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication required"));
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("name email role expertProfile");
+    if (!user) return next(new Error("User no longer exists"));
+    socket.user = user;
+    return next();
+  } catch {
+    return next(new Error("Invalid socket session"));
+  }
 });
+io.on("connection", (socket) => socket.join(`farmer:${socket.user._id}`));
+app.set("io", io);
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/diagnoses", diagnosisRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/predictions", predictionRoutes);
 app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
@@ -90,4 +114,8 @@ app.get("/", (req, res) => {
 });
 
 app.use(errorHandler);
+
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 

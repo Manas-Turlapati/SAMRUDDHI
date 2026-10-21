@@ -3,6 +3,11 @@ const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const { OAuth2Client } = require("google-auth-library");
 
+const normalizeRole = (value) => {
+  const role = String(value || "").trim().toLowerCase();
+  return ["farmer", "expert", "admin"].includes(role) ? role : "farmer";
+};
+
 const googleLogin = asyncHandler(async (req, res) => {
   const { credential } = req.body;
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -36,8 +41,7 @@ const googleLogin = asyncHandler(async (req, res) => {
     }
     // Normalize legacy accounts before saving so old roles or incomplete profile
     // data do not prevent a Google account from being linked.
-    const normalizedRole = String(user.role || "").trim().toUpperCase();
-    const role = normalizedRole === "ADMIN" ? "ADMIN" : "USER";
+    const role = normalizeRole(user.role);
     const name = String(user.name || "").trim() || payload.name || email.split("@")[0];
     if (user.googleId !== payload.sub || user.role !== role || user.name !== name) {
       user.googleId = payload.sub;
@@ -46,7 +50,7 @@ const googleLogin = asyncHandler(async (req, res) => {
       await user.save();
     }
   } else {
-    user = await User.create({ name: payload.name || email.split("@")[0], email, googleId: payload.sub, role: "USER" });
+    user = await User.create({ name: payload.name || email.split("@")[0], email, googleId: payload.sub, role: "farmer" });
   }
   const token = generateToken(user._id, user.role);
   res.json({ success: true, message: "Google sign-in successful", token, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
@@ -91,7 +95,7 @@ const register = asyncHandler(async (req, res) => {
 
 // LOGIN
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role: requestedRole } = req.body;
 
   if (!email || !password) {
     res.status(400);
@@ -112,6 +116,25 @@ const login = asyncHandler(async (req, res) => {
     throw new Error("Invalid email or password");
   }
 
+  const normalizedRole = normalizeRole(user.role);
+  if (user.role !== normalizedRole) {
+    user.role = normalizedRole;
+    await user.save();
+  }
+
+  if (requestedRole && !["farmer", "expert", "admin"].includes(requestedRole)) {
+    res.status(400);
+    throw new Error("Select a valid account role.");
+  }
+  if (requestedRole && requestedRole !== normalizedRole) {
+    res.status(403);
+    throw new Error(`This account does not have the ${requestedRole} role. Choose the correct role or contact the administrator.`);
+  }
+  if (requestedRole === "expert" && !user.expertProfile?.isVerified) {
+    res.status(403);
+    throw new Error("This expert account has not been verified by an administrator yet.");
+  }
+
   const token = generateToken(user._id, user.role);
 
   res.json({
@@ -127,13 +150,19 @@ const login = asyncHandler(async (req, res) => {
   });
 });
 const getMe = asyncHandler(async (req, res) => {
+  const role = normalizeRole(req.user.role);
+  if (req.user.role !== role) {
+    req.user.role = role;
+    await req.user.save();
+  }
   res.json({
     success: true,
     user: {
       id: req.user._id,
       name: req.user.name,
       email: req.user.email,
-      role: req.user.role,
+      role,
+      expertProfile: req.user.expertProfile,
     },
   });
 });

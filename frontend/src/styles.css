@@ -1474,6 +1474,119 @@ p {
   font-weight: 900;
 }
 
+.diagnosis-review-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.review-status-chip {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  color: #76500a;
+  background: #fff1c6;
+  font-weight: 700;
+}
+
+.review-status-chip.pending_expert_review { color: #714314; background: #ffedcf; }
+.review-status-chip.expert_verified { color: #1f653c; background: #dff4e5; }
+.review-status-error { color: #a12626; }
+.review-status-loading { color: #53645a; }
+
+.expert-page,
+.magic-review-page { max-width: 1500px; margin: 0 auto; }
+.magic-review-page { padding: 2rem; }
+.magic-review-page > header { margin-bottom: 1.5rem; }
+.expert-queue-list { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.expert-queue-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+}
+.expert-queue-card > div { display: grid; gap: 0.35rem; }
+.expert-queue-card > div > span { color: #647267; font-size: 0.9rem; }
+
+.expert-review-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  align-items: start;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+.expert-review-image-column,
+.expert-review-form-column {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: #fff;
+}
+.review-image-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
+.review-image-toolbar button { padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: 0.65rem; background: #fff; cursor: pointer; }
+.review-image-toolbar button.active { color: #fff; background: var(--soil); }
+.review-image-toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
+.review-image-toolbar label { display: flex; align-items: center; gap: 0.5rem; }
+.review-canvas-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #edf1ec;
+  line-height: 0;
+}
+.review-canvas-stage > img { display: block; width: 100%; height: auto; }
+.review-canvas-stage > .gradcam-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+.review-canvas-stage > canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; pointer-events: none; }
+.review-canvas-stage.drawing-enabled > canvas { pointer-events: auto; cursor: crosshair; }
+.review-image-empty { min-height: 18rem; display: grid; place-items: center; color: #53645a; }
+.review-canvas-hint { margin: 0.7rem 0 0; color: #647267; }
+.expert-review-form-column { display: grid; gap: 1rem; }
+.expert-review-form-column h2 { margin: 0; }
+.review-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; }
+.review-metrics > div { padding: 0.7rem; border-radius: 0.7rem; background: #f4f7f3; }
+.review-metrics dt { color: #647267; font-size: 0.8rem; }
+.review-metrics dd { margin: 0.2rem 0 0; font-weight: 700; }
+.review-probabilities { display: grid; gap: 0.3rem; color: #53645a; font-size: 0.9rem; }
+.expert-review-form-column > label,
+.review-prescription-fields label { display: grid; gap: 0.4rem; }
+.expert-review-form-column input,
+.expert-review-form-column select { width: 100%; }
+.review-prescription-fields { display: grid; gap: 0.75rem; margin: 0; padding: 0.9rem; border: 1px solid var(--line); border-radius: 0.75rem; }
+.review-prescription-fields legend { padding: 0 0.3rem; font-weight: 700; }
+.review-submit-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; }
+.admin-tools-page { max-width: 1100px; margin: 0 auto; }
+.admin-tool-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin: 1rem 0; padding: 1.25rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; }
+.admin-tool-card > div { flex: 1 1 18rem; }
+.admin-tool-card h2 { margin: 0 0 0.45rem; }
+.admin-tool-card p { margin: 0; color: #647267; }
+.sidebar-notification-count { display: inline-grid; min-width: 1.35rem; height: 1.35rem; place-items: center; margin-left: auto; padding: 0 0.25rem; border-radius: 999px; color: #fff; background: #c63832; font-size: 0.72rem; line-height: 1; }
+.farmer-notification-top-link { display: inline-flex; align-items: center; gap: 0.4rem; }
+.farmer-notifications-page { max-width: 1050px; margin: 0 auto; }
+.farmer-notification-list { display: grid; gap: 0.85rem; margin-top: 1.5rem; }
+.farmer-notification-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.1rem; border: 1px solid var(--line); border-radius: 1rem; background: #fff; }
+.farmer-notification-card.unread { border-left: 4px solid #c63832; background: #fffdfa; }
+.farmer-notification-card h2 { margin: 0.65rem 0 0.25rem; font-size: 1.1rem; }
+.farmer-notification-card p { margin: 0; color: #647267; }
+.farmer-notification-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.login-role-picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; margin: 1rem 0; padding: 0.35rem; border: 1px solid var(--line); border-radius: 0.85rem; background: #f4f7f3; }
+.login-role-picker button { padding: 0.7rem 0.45rem; border: 0; border-radius: 0.6rem; background: transparent; cursor: pointer; text-transform: capitalize; }
+.login-role-picker button.active { color: #fff; background: var(--soil); font-weight: 700; }
+.role-login-note { margin: 0; color: #647267; font-size: 0.9rem; }
+
 @media (max-width: 980px) {
   .hero-section,
   .dashboard-grid {
@@ -1497,6 +1610,8 @@ p {
   .app-main .topbar {
     display: flex;
   }
+
+  .expert-review-workspace { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 700px) {
@@ -1556,4 +1671,8 @@ p {
     width: 7rem;
     height: 7rem;
   }
+
+  .expert-queue-card { align-items: stretch; flex-direction: column; }
+  .farmer-notification-card { align-items: stretch; flex-direction: column; }
+  .magic-review-page { padding: 1rem; }
 }

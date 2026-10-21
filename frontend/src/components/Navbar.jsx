@@ -1,9 +1,17 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import FarmerNotificationLink from "./FarmerNotificationLink";
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const role = String(user?.role || "farmer").toLowerCase();
+  const home = role === "admin" ? "/admin" : role === "expert" ? "/expert/reviews" : "/dashboard";
+  const links = role === "admin"
+    ? [{ to: "/admin", label: "Admin Tools" }, { to: "/expert/reviews", label: "Reviews" }, { to: "/profile", label: "Profile" }]
+    : role === "expert"
+      ? [{ to: "/expert/reviews", label: "Review Queue" }, { to: "/profile", label: "Profile" }]
+      : [{ to: "/dashboard", label: "Dashboard" }, { to: "/history", label: "History" }, { to: "/subsidies", label: "Subsidies" }, { to: "/profile", label: "Profile" }];
 
   const handleLogout = async () => {
     await logout();
@@ -12,7 +20,7 @@ export default function Navbar() {
 
   return (
     <header className="topbar">
-      <Link to={isAuthenticated ? "/dashboard" : "/"} className="brand">
+      <Link to={isAuthenticated ? home : "/"} className="brand">
         <span className="brand-mark">S</span>
         <span>
           <strong>SAMRUDDHI</strong>
@@ -22,10 +30,8 @@ export default function Navbar() {
 
       {isAuthenticated ? (
         <nav className="topbar-nav" aria-label="Application">
-          <NavLink to="/dashboard">Dashboard</NavLink>
-          <NavLink to="/history">History</NavLink>
-          <NavLink to="/subsidies">Subsidies</NavLink>
-          <NavLink to="/profile">Profile</NavLink>
+          {links.map((link) => <NavLink key={link.to} to={link.to}>{link.label}</NavLink>)}
+          {role === "farmer" && <FarmerNotificationLink />}
           <button type="button" className="text-button" onClick={handleLogout}>
             Logout
           </button>

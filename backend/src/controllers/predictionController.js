@@ -5,6 +5,7 @@ const { getDiseaseInformation } = require("../services/diseaseInfoService");
 const { recommendFertilizer } = require("../services/fertilizerRecommendationService");
 const predictLeaf = require("../services/mlService");
 const { createPredictionReport } = require("../services/reportService");
+const { createGatedDiagnosis } = require("../services/inferenceGate");
 
 const predict = asyncHandler(async (req, res) => {
   if (!req.file) {
@@ -42,10 +43,22 @@ const predict = asyncHandler(async (req, res) => {
     imageMimeType: req.file.mimetype,
     ...(hasLocation ? { location: { latitude, longitude } } : {}),
   });
+  const gated = await createGatedDiagnosis({
+    farmerId: req.user._id,
+    predictionId: prediction._id,
+    prediction: result.prediction,
+    image: req.file.buffer,
+    imageMimeType: req.file.mimetype,
+  });
 
   res.status(200).json({
     success: true,
     predictionId: prediction._id,
+    diagnosisId: gated.diagnosis._id,
+    reviewStatus: gated.diagnosis.reviewStatus,
+    flaggedForReview: gated.flaggedForReview,
+    flagReason: gated.flagReason,
+    entropy: gated.entropy,
     prediction: {
       disease: prediction.disease,
       confidence: prediction.confidence,
@@ -107,15 +120,9 @@ const downloadReport = asyncHandler(async (req, res) => {
   doc.end();
 });
 
-const consultExpert = asyncHandler(async (req, res) => {
-  res.status(503);
-  res.json({ success: false, message: "Expert referrals are temporarily unavailable." });
-});
-
 module.exports = {
   predict,
   getHistory,
   getDiseaseMap,
   downloadReport,
-  consultExpert,
 };

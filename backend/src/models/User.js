@@ -27,8 +27,13 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, sparse: true },
     role: {
       type: String,
-      enum: ["USER", "ADMIN"],
-      default: "USER",
+      enum: ["farmer", "expert", "admin"],
+      default: "farmer",
+    },
+    expertProfile: {
+      specialization: { type: String, trim: true },
+      institution: { type: String, trim: true },
+      isVerified: { type: Boolean, default: false },
     },
   },
   {

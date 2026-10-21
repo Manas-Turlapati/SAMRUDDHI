@@ -8,11 +8,15 @@ and runs prediction on an uploaded leaf image.
 from __future__ import annotations
 
 import os
+import io
+import base64
+import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as tvm
+from PIL import Image, ImageOps
 
 from utils.preprocessing import bytes_to_tensor
 
@@ -65,17 +69,58 @@ class DiseaseModel:
         self.model.to(self.device)
         self.model.eval()
 
-    @torch.inference_mode()
     def predict(self, image_bytes: bytes) -> dict:
-        """Returns {"crop": str, "disease": str, "confidence": float}."""
+        """Return class probabilities, uncertainty, and a Grad-CAM overlay when flagged."""
         tensor = bytes_to_tensor(image_bytes).to(self.device)
-        logits = self.model(tensor)
-        probs = F.softmax(logits, dim=1)[0]
-        confidence, idx = torch.max(probs, dim=0)
+        with torch.inference_mode():
+            logits = self.model(tensor)
+            probs = F.softmax(logits, dim=1)[0]
+            confidence, idx = torch.max(probs, dim=0)
 
         crop, disease = _parse_class_name(self.class_names[idx.item()])
-        return {
+        probabilities = {
+            class_name: round(float(probability), 7)
+            for class_name, probability in zip(self.class_names, probs.tolist())
+        }
+        entropy = -sum(value * math.log2(value) for value in probabilities.values() if value > 0)
+        result = {
             "crop": crop,
             "disease": disease,
             "confidence": round(confidence.item(), 4),
+            "probabilities": probabilities,
+            "entropy": round(entropy, 6),
         }
+        if result["confidence"] < 0.7 or entropy > 1.2:
+            result["gradcam_base64"] = self._gradcam_overlay(image_bytes, idx.item())
+        return result
+
+    def _gradcam_overlay(self, image_bytes: bytes, class_index: int) -> str:
+        activation = {}
+
+        def capture_activation(_module, _inputs, output):
+            output.retain_grad()
+            activation["tensor"] = output
+
+        handle = self.model.features[-1].register_forward_hook(capture_activation)
+        try:
+            tensor = bytes_to_tensor(image_bytes).to(self.device)
+            with torch.enable_grad():
+                logits = self.model(tensor)
+                gradients, = torch.autograd.grad(logits[0, class_index], activation["tensor"])
+
+            features = activation["tensor"]
+            weights = gradients.mean(dim=(2, 3), keepdim=True)
+            heatmap = F.relu((weights * features).sum(dim=1, keepdim=True))
+            heatmap = F.interpolate(heatmap, size=(224, 224), mode="bilinear", align_corners=False)[0, 0]
+            heatmap = heatmap - heatmap.min()
+            heatmap = heatmap / heatmap.max().clamp_min(1e-8)
+
+            grayscale = Image.fromarray((heatmap.detach().cpu().numpy() * 255).astype("uint8"), mode="L")
+            color = ImageOps.colorize(grayscale, black="#000000", white="#ff3b00").convert("RGB")
+            original = Image.open(io.BytesIO(image_bytes)).convert("RGB").resize((224, 224))
+            overlay = Image.blend(original, color, alpha=0.42)
+            output = io.BytesIO()
+            overlay.save(output, format="PNG", optimize=True)
+            return base64.b64encode(output.getvalue()).decode("ascii")
+        finally:
+            handle.remove()
