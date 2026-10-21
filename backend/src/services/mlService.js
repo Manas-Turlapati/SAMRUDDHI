@@ -1,15 +1,6 @@
 const axios = require("axios");
 const FormData = require("form-data");
-
-const normalizeMlApiUrl = () => {
-  const mlApiUrl = process.env.ML_API_URL;
-
-  if (!mlApiUrl) {
-    throw new Error("ML_API_URL is not configured");
-  }
-
-  return mlApiUrl.replace(/\/$/, "").replace(/\/predict$/, "");
-};
+const getMlApiUrl = require("../config/mlConfig");
 
 const normalizeMlError = (error) => {
   if (error.response) {
@@ -39,7 +30,7 @@ const normalizeMlError = (error) => {
 };
 
 const predictLeaf = async (file) => {
-  const mlApiUrl = normalizeMlApiUrl();
+  const mlApiUrl = await getMlApiUrl();
 
   const form = new FormData();
 

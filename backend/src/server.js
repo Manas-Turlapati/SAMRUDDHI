@@ -8,6 +8,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const User = require("./models/User");
+const getMlApiUrl = require("./config/mlConfig");
 const authRoutes = require("./routes/authRoutes");
 const predictionRoutes = require("./routes/predictionRoutes");
 const diagnosisRoutes = require("./routes/diagnosisRoutes");
@@ -68,24 +69,18 @@ app.use("/api/predictions", predictionRoutes);
 app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/weather-risk", weatherRiskRoutes);
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+  const mlApiUrl = await getMlApiUrl();
   res.json({
     success: true,
     backend: "running",
-    mlApiConfigured: Boolean(process.env.ML_API_URL),
-    mlApiUrl: process.env.ML_API_URL ? process.env.ML_API_URL.replace(/\/$/, "") : null,
+    mlApiConfigured: true,
+    mlApiUrl,
+    mlApiUrlSource: mlApiUrl === getMlApiUrl.getLocalMlApiUrl() ? "local service" : "environment",
   });
 });
 app.get("/api/health/ml", async (req, res) => {
-  const mlApiUrl = process.env.ML_API_URL?.replace(/\/$/, "").replace(/\/predict$/, "");
-
-  if (!mlApiUrl) {
-    res.status(500).json({
-      success: false,
-      message: "ML_API_URL is not configured",
-    });
-    return;
-  }
+  const mlApiUrl = await getMlApiUrl();
 
   try {
     const response = await axios.get(`${mlApiUrl}/health`, {
