@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
+  <title id="title">SAMRUDDHI (LDFRS) system architecture</title>
+  <desc id="desc">Architecture diagram showing farmer, expert and admin flows through the React frontend, Express backend, FastAPI image model, MongoDB and connected tools.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f9f2"/><stop offset="1" stop-color="#edf4ff"/></linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16845b"/><stop offset="1" stop-color="#0f6848"/></linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#183b30" flood-opacity=".10"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#57736b"/></marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3779b8"/></marker>
+    <style>
+      text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#18342c}.title{font-size:34px;font-weight:750}.subtitle{font-size:16px;fill:#557068}.section{font-size:15px;font-weight:750;letter-spacing:1.3px}.head{font-size:18px;font-weight:700}.body{font-size:14px;fill:#49645c}.small{font-size:12px;fill:#607870}.tag{font-size:12px;font-weight:700}.arrowlabel{font-size:12px;font-weight:650;fill:#48665d}.card{fill:#fff;stroke:#dce9e1;stroke-width:1.5;rx:16;filter:url(#shadow)}.flow{fill:none;stroke:#57736b;stroke-width:2.4;marker-end:url(#arrow)}.flowBlue{fill:none;stroke:#3779b8;stroke-width:2.4;marker-end:url(#arrowBlue)}
+    </style>
+  </defs>
+  <rect width="1600" height="1200" fill="url(#bg)"/>
+  <circle cx="1480" cy="80" r="180" fill="#dcefe4" opacity=".55"/><circle cx="80" cy="1100" r="210" fill="#e0ebfa" opacity=".55"/>
+  <text x="64" y="62" class="title">SAMRUDDHI · LDFRS</text>
+  <text x="64" y="91" class="subtitle">System architecture · diagnosis, recommendations, expert review and farmer tools</text>
+  <rect x="1268" y="44" width="270" height="38" rx="19" fill="#e0f2e8"/><text x="1403" y="68" text-anchor="middle" class="tag" fill="#176547">WEB APP  →  API  →  ML + DATA</text>
+
+  <!-- Actors -->
+  <text x="64" y="151" class="section" fill="#16845b">PEOPLE &amp; ENTRY POINTS</text>
+  <rect x="64" y="174" width="330" height="120" class="card"/>
+  <circle cx="104" cy="214" r="22" fill="#e0f2e8"/><text x="104" y="221" text-anchor="middle" font-size="22">🌱</text>
+  <text x="140" y="209" class="head">Farmer</text><text x="140" y="232" class="body">Register / sign in · upload leaf photo</text><text x="88" y="266" class="small">Dashboard · history · map · reports · tools · notifications</text>
+  <rect x="64" y="317" width="330" height="104" class="card"/>
+  <circle cx="104" cy="357" r="22" fill="#e8effd"/><text x="104" y="364" text-anchor="middle" font-size="21">🩺</text>
+  <text x="140" y="352" class="head">Verified expert</text><text x="140" y="376" class="body">Review queue · inspect case · submit finding</text><text x="88" y="404" class="small">Can also open a secure, one-time review link</text>
+  <rect x="64" y="444" width="330" height="89" class="card"/>
+  <circle cx="104" cy="484" r="22" fill="#fff1d9"/><text x="104" y="491" text-anchor="middle" font-size="21">⚙</text>
+  <text x="140" y="479" class="head">Admin</text><text x="140" y="503" class="body">Manage privileged roles · export labeled samples</text>
+
+  <!-- Frontend -->
+  <text x="448" y="151" class="section" fill="#3779b8">USER EXPERIENCE</text>
+  <rect x="448" y="174" width="340" height="359" rx="20" fill="#eef6ff" stroke="#c9def5" stroke-width="1.5"/>
+  <rect x="448" y="174" width="340" height="56" rx="20" fill="#347bb6"/><path d="M448 210h340v20H448z" fill="#347bb6"/>
+  <text x="474" y="210" class="head" fill="#fff">React + Vite frontend</text>
+  <text x="474" y="261" class="body">Public</text><text x="474" y="284" class="small">Home · register · login · Google sign-in</text>
+  <line x1="474" y1="300" x2="762" y2="300" stroke="#d6e6f5"/>
+  <text x="474" y="326" class="body">Farmer workspace</text><text x="474" y="349" class="small">Leaf upload · prediction result · review status</text><text x="474" y="369" class="small">History · diagnosis map · PDF report</text><text x="474" y="389" class="small">Weather risk · nearby shops · translation</text><text x="474" y="409" class="small">Profile · subsidies · live notifications</text>
+  <line x1="474" y1="425" x2="762" y2="425" stroke="#d6e6f5"/>
+  <text x="474" y="451" class="body">Expert / admin workspace</text><text x="474" y="474" class="small">Review queue · case canvas · report · export</text>
+  <rect x="474" y="493" width="145" height="24" rx="12" fill="#dcecff"/><text x="546" y="510" text-anchor="middle" class="tag" fill="#286396">Netlify deploy</text>
+
+  <!-- Backend -->
+  <text x="848" y="151" class="section" fill="#16845b">APPLICATION BACKEND</text>
+  <rect x="848" y="174" width="390" height="359" rx="20" fill="#eff8f1" stroke="#cce5d2" stroke-width="1.5"/>
+  <rect x="848" y="174" width="390" height="56" rx="20" fill="url(#green)"/><path d="M848 210h390v20H848z" fill="#0f6848"/>
+  <text x="874" y="210" class="head" fill="#fff">Node.js · Express API</text>
+  <text x="874" y="261" class="body">REST API (/api) + Socket.IO</text><text x="874" y="284" class="small">JWT auth · role checks · upload validation · error handling</text>
+  <line x1="874" y1="300" x2="1210" y2="300" stroke="#d5e8d9"/>
+  <text x="874" y="327" class="body">Diagnosis orchestration</text><text x="874" y="350" class="small">Call ML → add disease info + fertilizer guidance</text><text x="874" y="370" class="small">Save scan → calculate entropy / confidence gate</text><text x="874" y="390" class="small">Create review case when flagged or requested</text>
+  <line x1="874" y1="407" x2="1210" y2="407" stroke="#d5e8d9"/>
+  <text x="874" y="434" class="body">Domain services</text><text x="874" y="457" class="small">Auth · predictions · diagnoses · reviews · reports</text><text x="874" y="477" class="small">Weather risk · shops · translation · notifications</text>
+  <rect x="874" y="493" width="140" height="24" rx="12" fill="#d9efe0"/><text x="944" y="510" text-anchor="middle" class="tag" fill="#176547">Render deploy</text>
+
+  <!-- ML -->
+  <text x="1298" y="151" class="section" fill="#845fc0">IMAGE INFERENCE</text>
+  <rect x="1298" y="174" width="238" height="359" rx="20" fill="#f5f0ff" stroke="#ded0f6" stroke-width="1.5"/>
+  <rect x="1298" y="174" width="238" height="56" rx="20" fill="#7855ae"/><path d="M1298 210h238v20h-238z" fill="#7855ae"/>
+  <text x="1320" y="210" class="head" fill="#fff">Python · FastAPI</text>
+  <text x="1320" y="264" class="body">On startup</text><text x="1320" y="287" class="small">Load disease_model.pth</text>
+  <line x1="1320" y1="303" x2="1514" y2="303" stroke="#e3d9f3"/>
+  <text x="1320" y="330" class="body">POST /predict</text><text x="1320" y="353" class="small">Validate JPG / PNG ≤ 5 MB</text><text x="1320" y="373" class="small">Preprocess leaf image</text><text x="1320" y="393" class="small">Classifier → disease + confidence</text>
+  <line x1="1320" y1="411" x2="1514" y2="411" stroke="#e3d9f3"/>
+  <text x="1320" y="438" class="body">GET /health</text><text x="1320" y="461" class="small">Model readiness check</text>
+  <rect x="1320" y="493" width="172" height="24" rx="12" fill="#e9def9"/><text x="1406" y="510" text-anchor="middle" class="tag" fill="#684398">Model inference only</text>
+
+  <!-- Main flow arrows -->
+  <path d="M394 231H438" class="flow"/><text x="416" y="218" text-anchor="middle" class="arrowlabel">use</text>
+  <path d="M788 255H838" class="flow"/><text x="813" y="242" text-anchor="middle" class="arrowlabel">HTTPS / JSON</text>
+  <path d="M1238 322H1288" class="flowBlue"/><text x="1263" y="308" text-anchor="middle" class="arrowlabel">image bytes</text>
+  <path d="M1288 371H1238" class="flowBlue"/><text x="1263" y="393" text-anchor="middle" class="arrowlabel">disease + confidence</text>
+  <path d="M848 507H798" class="flow"/><text x="823" y="525" text-anchor="middle" class="arrowlabel">result + status</text>
+
+  <!-- Core workflow -->
+  <text x="64" y="588" class="section" fill="#16845b">CORE DIAGNOSIS FLOW</text>
+  <g>
+    <rect x="64" y="610" width="222" height="104" class="card"/><circle cx="92" cy="640" r="16" fill="#dff1e5"/><text x="92" y="645" text-anchor="middle" class="tag" fill="#176547">1</text><text x="118" y="644" class="head">Capture</text><text x="84" y="677" class="small">Farmer sends leaf photo +</text><text x="84" y="696" class="small">optional crop / soil / location</text>
+    <rect x="318" y="610" width="222" height="104" class="card"/><circle cx="346" cy="640" r="16" fill="#e7def8"/><text x="346" y="645" text-anchor="middle" class="tag" fill="#684398">2</text><text x="372" y="644" class="head">Classify</text><text x="338" y="677" class="small">FastAPI model returns likely</text><text x="338" y="696" class="small">disease + confidence</text>
+    <rect x="572" y="610" width="222" height="104" class="card"/><circle cx="600" cy="640" r="16" fill="#dff1e5"/><text x="600" y="645" text-anchor="middle" class="tag" fill="#176547">3</text><text x="626" y="644" class="head">Enrich &amp; save</text><text x="592" y="677" class="small">Backend adds disease facts,</text><text x="592" y="696" class="small">fertilizer guidance and scan</text>
+    <rect x="826" y="610" width="222" height="104" class="card"/><circle cx="854" cy="640" r="16" fill="#fff0d8"/><text x="854" y="645" text-anchor="middle" class="tag" fill="#98651a">4</text><text x="880" y="644" class="head">Review gate</text><text x="846" y="677" class="small">Flag if confidence &lt; 70% or</text><text x="846" y="696" class="small">entropy &gt; 1.2; manual request too</text>
+    <rect x="1080" y="610" width="222" height="104" class="card"/><circle cx="1108" cy="640" r="16" fill="#dcecff"/><text x="1108" y="645" text-anchor="middle" class="tag" fill="#286396">5</text><text x="1134" y="644" class="head">Respond</text><text x="1100" y="677" class="small">Show diagnosis, confidence,</text><text x="1100" y="696" class="small">recommendation and review status</text>
+    <rect x="1334" y="610" width="202" height="104" class="card"/><circle cx="1362" cy="640" r="16" fill="#dff1e5"/><text x="1362" y="645" text-anchor="middle" class="tag" fill="#176547">6</text><text x="1388" y="644" class="head">Follow up</text><text x="1354" y="677" class="small">History · map · PDF</text><text x="1354" y="696" class="small">Live review updates</text>
+    <path d="M286 662H308" class="flow"/><path d="M540 662H562" class="flow"/><path d="M794 662H816" class="flow"/><path d="M1048 662H1070" class="flow"/><path d="M1302 662H1324" class="flow"/>
+  </g>
+
+  <!-- Data and human loop -->
+  <text x="64" y="766" class="section" fill="#16845b">PERSISTENCE, HUMAN REVIEW &amp; CONNECTED TOOLS</text>
+  <rect x="64" y="789" width="440" height="260" rx="20" fill="#fff" stroke="#cddfea" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="64" y="789" width="440" height="48" rx="20" fill="#427f9c"/><path d="M64 817h440v20H64z" fill="#427f9c"/><text x="88" y="820" class="head" fill="#fff">MongoDB · persistent records</text>
+  <text x="90" y="869" class="body">User</text><text x="178" y="869" class="small">accounts · roles · expert profile</text>
+  <text x="90" y="902" class="body">Prediction</text><text x="178" y="902" class="small">image · disease · confidence · location · guidance</text>
+  <text x="90" y="935" class="body">Diagnosis / Review</text><text x="230" y="935" class="small">status · expert finding · one-time link</text>
+  <text x="90" y="968" class="body">Notification / Samples</text><text x="252" y="968" class="small">review events · active-learning export</text>
+  <rect x="90" y="993" width="380" height="34" rx="10" fill="#e7f2f6"/><text x="280" y="1015" text-anchor="middle" class="small">Review submission uses MongoDB transactions (replica set)</text>
+
+  <rect x="558" y="789" width="488" height="260" rx="20" fill="#fff8eb" stroke="#efdbb3" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="558" y="789" width="488" height="48" rx="20" fill="#bd8429"/><path d="M558 817h488v20H558z" fill="#bd8429"/><text x="582" y="820" class="head" fill="#fff">Human-in-the-loop review</text>
+  <text x="584" y="869" class="body">Flagged / farmer-requested diagnosis</text><text x="584" y="893" class="small">→ expert queue or optional signed notification webhook</text>
+  <text x="584" y="925" class="body">Expert checks case and submits review</text><text x="584" y="949" class="small">→ backend updates review status and diagnosis</text>
+  <text x="584" y="981" class="body">Socket.IO sends farmer a live update</text><text x="584" y="1005" class="small">→ farmer sees review outcome; admin can export samples</text>
+  <path d="M1048 663C1080 745 890 751 804 780" class="flow"/><text x="968" y="755" class="arrowlabel">flagged case</text>
+  <path d="M558 884C500 884 500 372 404 372" fill="none" stroke="#bd8429" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrow)"/><text x="450" y="650" class="arrowlabel" transform="rotate(-90 450 650)">expert queue / one-time link</text>
+  <path d="M1046 962C1166 962 1167 498 798 498" fill="none" stroke="#3779b8" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#arrowBlue)"/><text x="1175" y="828" class="arrowlabel" transform="rotate(-90 1175 828)">Socket.IO review notification</text>
+
+  <rect x="1100" y="789" width="436" height="260" rx="20" fill="#f4f2fb" stroke="#ddd7ee" stroke-width="1.5" filter="url(#shadow)"/>
+  <rect x="1100" y="789" width="436" height="48" rx="20" fill="#70649a"/><path d="M1100 817h436v20h-436z" fill="#70649a"/><text x="1124" y="820" class="head" fill="#fff">Optional / external integrations</text>
+  <text x="1126" y="870" class="body">Google OAuth</text><text x="1250" y="870" class="small">sign-in provider</text>
+  <text x="1126" y="904" class="body">Weather service</text><text x="1250" y="904" class="small">disease risk by location</text>
+  <text x="1126" y="938" class="body">Nearby shop lookup</text><text x="1250" y="938" class="small">fertilizer shops by coordinates</text>
+  <text x="1126" y="972" class="body">Translation service</text><text x="1250" y="972" class="small">translated text / UI support</text>
+  <text x="1126" y="1006" class="body">Review webhook</text><text x="1250" y="1006" class="small">optional signed expert alert</text>
+
+  <text x="64" y="1110" class="small">Deployment view: Netlify hosts the frontend · Render hosts backend and ML service · MongoDB Atlas or local replica set stores application data.</text>
+  <text x="64" y="1135" class="small">Security boundary: bearer JWT protects user APIs; expert/admin routes enforce roles; one-time review links and inference callbacks are trusted flows.</text>
+  <text x="1536" y="1168" text-anchor="end" class="small">Architecture based on this repository's README and source</text>
+</svg>

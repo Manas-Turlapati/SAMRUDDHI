@@ -2,6 +2,12 @@
 
 **Sustainable Agriculture Model for Resource Utilisation, Disease Diagnostics, and Health Initiative** is a web application for crop leaf disease diagnosis and related farming guidance. A farmer uploads a leaf image, receives a model prediction and fertilizer guidance, and can request a human expert review. The app also includes diagnosis history, weather risk, nearby shops, translation, notifications, and PDF reports.
 
+## Architecture
+
+![SAMRUDDHI architecture diagram](docs/architecture.svg)
+
+The diagram follows a leaf photo from the farmer's browser through the Express API and FastAPI disease model, then shows how the diagnosis is saved, reviewed, and returned to farmer, expert, or admin workspaces.
+
 ## Features
 
 - Farmer registration, email/password login, and optional Google sign-in.
