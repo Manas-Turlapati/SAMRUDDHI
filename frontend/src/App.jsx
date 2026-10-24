@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Register from "./pages/Register";
 import Subsidies from "./pages/Subsidies";
+import RecoveryTracker from "./pages/RecoveryTracker";
 
 const roleHome = (value) => {
   const role = String(value || "farmer").toLowerCase();
@@ -60,12 +61,13 @@ function PublicRoute({ children }) {
 
 function AppLayout({ children }) {
   const { user } = useAuth();
+  const role = String(user?.role || "farmer").toLowerCase();
   return (
-    <div className="app-shell">
+    <div className={`app-shell role-${role}`} data-role={role}>
       <Sidebar />
       <main className="app-main">
         <Navbar />
-        {String(user?.role || "").toLowerCase() === "farmer" && <FarmerRealtimeBridge />}
+        {role === "farmer" && <FarmerRealtimeBridge />}
         {children}
       </main>
     </div>
@@ -111,6 +113,16 @@ export default function App() {
             <ProtectedRoute roles={["farmer"]}>
               <AppLayout>
                 <History />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/recovery"
+          element={
+            <ProtectedRoute roles={["farmer"]}>
+              <AppLayout>
+                <RecoveryTracker />
               </AppLayout>
             </ProtectedRoute>
           }

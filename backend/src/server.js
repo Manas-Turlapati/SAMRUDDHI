@@ -17,6 +17,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const translationRoutes = require("./routes/translationRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const weatherRiskRoutes = require("./routes/weatherRiskRoutes");
+const recoveryRoutes = require("./routes/recoveryRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
 
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -30,7 +31,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors({origin:"*"}));
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    // Keep the hosted Atlas URI as the default, while allowing the same local
+    // backend to run against the laptop's MongoDB for offline demos.
+    const mongoUri = process.env.DATABASE_MODE === "local"
+      ? (process.env.MONGO_URI_LOCAL || "mongodb://127.0.0.1:27017/ldfrs")
+      : process.env.MONGO_URI;
+    if (!mongoUri) {
+      throw new Error("Set MONGO_URI, or set DATABASE_MODE=local for laptop MongoDB.");
+    }
+    await mongoose.connect(mongoUri);
     console.log("MongoDB connected successfully!");
   } catch (err) {
     console.error("MongoDB connection failed:", err.message);
@@ -69,6 +78,7 @@ app.use("/api/predictions", predictionRoutes);
 app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/weather-risk", weatherRiskRoutes);
+app.use("/api/recovery", recoveryRoutes);
 app.get("/api/health", async (req, res) => {
   const mlApiUrl = await getMlApiUrl();
   res.json({

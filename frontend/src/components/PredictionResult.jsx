@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import WeatherRiskPanel from "./WeatherRiskPanel";
 
 const asPercent = (confidence) => {
@@ -8,6 +9,7 @@ const asPercent = (confidence) => {
 
 export default function PredictionResult({
   result,
+  predictionId,
   onDownloadReport,
   downloadingReport = false,
   onAnalyzeWeatherRisk,
@@ -15,6 +17,8 @@ export default function PredictionResult({
   weatherRiskLoading = false,
   weatherRiskError = "",
 }) {
+  const navigate = useNavigate();
+
   if (!result) {
     return (
       <section className="result-placeholder">
@@ -38,13 +42,33 @@ export default function PredictionResult({
         </div>
       </div>
 
-      {onDownloadReport && (
-        <div className="report-actions">
+      <div className="report-actions">
+        {onDownloadReport && (
           <button type="button" className="secondary-button" onClick={onDownloadReport} disabled={downloadingReport}>
             {downloadingReport ? "Preparing report..." : "Download Report"}
           </button>
-        </div>
-      )}
+        )}
+        {predictionId && (
+          <button
+            type="button"
+            className="primary-button track-recovery-cta"
+            onClick={() => navigate(`/recovery?start=${predictionId}`)}
+            style={{
+              background: "var(--green-700, #24683b)",
+              color: "#fff",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.5rem",
+              fontWeight: "700",
+              padding: "0.75rem 1.25rem",
+              borderRadius: "0.75rem",
+              boxShadow: "0 8px 20px rgba(36, 104, 59, 0.22)",
+            }}
+          >
+            <span>🌱</span> Track Healing & Follow-up
+          </button>
+        )}
+      </div>
 
       {result.diseaseInformation?.actionableTreatment && (
         <section className="prescription-panel">

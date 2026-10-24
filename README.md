@@ -58,6 +58,21 @@ MONGO_URI=mongodb://127.0.0.1:27017/ldfrs
 JWT_SECRET=replace-with-a-long-random-secret
 ```
 
+To keep Atlas for the hosted backend and use the laptop's MongoDB for the local
+demo, leave `MONGO_URI` set to your Atlas URI and add these settings to the
+local backend `.env`:
+
+```env
+DATABASE_MODE=local
+MONGO_URI_LOCAL=mongodb://127.0.0.1:27017/ldfrs
+```
+
+The local frontend should use `VITE_API_URL=http://localhost:5000/api` in
+`frontend/.env`. The hosted frontend continues using its deployed API. These
+are separate environments and use separate databases; accounts and demo data
+must be created in the environment you are showing. Remove `DATABASE_MODE`
+or set it to `atlas` to make the local backend use `MONGO_URI` again.
+
 For local development, the ML service is expected at port **8001** by default. You can override it in `backend/.env`:
 
 ```env

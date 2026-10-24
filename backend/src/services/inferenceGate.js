@@ -44,7 +44,7 @@ const createExpertReview = async (diagnosis, { reason = diagnosis.flagReason } =
   });
   await ReviewMagicToken.create({ reviewId: review.reviewId, tokenHash, expiresAt: review.magicTokenExpiresAt });
   const frontendUrl = (process.env.FRONTEND_URL || "").replace(/\/$/, "");
-  const backendUrl = (process.env.BACKEND_URL || process.env.PUBLIC_API_URL || "").replace(/\/$/, "");
+  const backendUrl = (process.env.BACKEND_URL || process.env.PUBLIC_API_URL || "").replace(/\/$/, "").replace(/\/api$/, "");
   const magicUrl = frontendUrl ? `${frontendUrl}/review/magic?token=${encodeURIComponent(rawToken)}` : null;
   const imageUrl = diagnosis.rawImageUrl?.startsWith("http")
     ? diagnosis.rawImageUrl

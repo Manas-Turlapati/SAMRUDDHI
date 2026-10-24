@@ -4,20 +4,42 @@ import FarmerNotificationLink from "./FarmerNotificationLink";
 
 const linksByRole = {
   farmer: [
-    { to: "/dashboard", icon: "D", label: "Dashboard" },
-    { to: "/history", icon: "H", label: "History" },
-    { to: "/subsidies", icon: "S", label: "Subsidies" },
-    { to: "/profile", icon: "P", label: "Profile" },
+    { to: "/dashboard", icon: "🌾", label: "Dashboard" },
+    { to: "/history", icon: "📋", label: "History" },
+    { to: "/recovery", icon: "🌱", label: "Crop Recovery" },
+    { to: "/subsidies", icon: "🏛️", label: "Subsidies" },
+    { to: "/profile", icon: "👤", label: "Profile" },
   ],
   expert: [
-    { to: "/expert/reviews", icon: "E", label: "Review Queue" },
-    { to: "/profile", icon: "P", label: "Profile" },
+    { to: "/expert/reviews", icon: "🔬", label: "Diagnostic Queue" },
+    { to: "/profile", icon: "👤", label: "Lab Profile" },
   ],
   admin: [
-    { to: "/admin", icon: "A", label: "Admin Tools" },
-    { to: "/expert/reviews", icon: "E", label: "Expert Reviews" },
-    { to: "/profile", icon: "P", label: "Profile" },
+    { to: "/admin", icon: "⚡", label: "Control Center" },
+    { to: "/expert/reviews", icon: "🔬", label: "Review Queue" },
+    { to: "/profile", icon: "👤", label: "Admin Profile" },
   ],
+};
+
+const roleMeta = {
+  farmer: {
+    mark: "🌿",
+    title: "SAMRUDDHI",
+    subtitle: "Sustainable crop AI",
+    badge: "Farmer Portal",
+  },
+  expert: {
+    mark: "🔬",
+    title: "AGRONOMY LAB",
+    subtitle: "Clinical pathology suite",
+    badge: "Licensed Agronomist",
+  },
+  admin: {
+    mark: "⚡",
+    title: "COMMAND CENTER",
+    subtitle: "Platform ops & telemetry",
+    badge: "System Administrator",
+  },
 };
 
 export default function Sidebar() {
@@ -25,6 +47,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const role = String(user?.role || "farmer").toLowerCase();
   const items = linksByRole[role] || linksByRole.farmer;
+  const meta = roleMeta[role] || roleMeta.farmer;
 
   const handleLogout = async () => {
     await logout();
@@ -32,16 +55,42 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar sidebar-${role}`}>
       <div className="sidebar-brand">
-        <span className="brand-mark">S</span>
-        <div><strong>SAMRUDDHI</strong><small>{role === "farmer" ? "Sustainable crop AI" : `${role[0].toUpperCase()}${role.slice(1)} workspace`}</small></div>
+        <span className="brand-mark">{meta.mark}</span>
+        <div>
+          <strong>{meta.title}</strong>
+          <small>{meta.subtitle}</small>
+        </div>
       </div>
+
+      <div className="sidebar-role-pill">
+        <span className="role-pulse-dot" />
+        <span>{meta.badge}</span>
+      </div>
+
       <nav className="side-nav" aria-label={`${role} navigation`}>
-        {items.map((item) => <NavLink key={item.to} to={item.to}><span>{item.icon}</span>{item.label}</NavLink>)}
+        {items.map((item) => (
+          <NavLink key={item.to} to={item.to}>
+            <span className="nav-icon">{item.icon}</span>
+            {item.label}
+          </NavLink>
+        ))}
         {role === "farmer" && <FarmerNotificationLink sidebar />}
       </nav>
-      <button type="button" className="side-logout" onClick={handleLogout}>Logout</button>
+
+      <div className="sidebar-footer">
+        <div className="sidebar-user-brief">
+          <span className="brief-avatar">{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
+          <div className="brief-info">
+            <strong>{user?.name || "User"}</strong>
+            <small>{user?.email || ""}</small>
+          </div>
+        </div>
+        <button type="button" className="side-logout" onClick={handleLogout}>
+          Sign Out
+        </button>
+      </div>
     </aside>
   );
 }

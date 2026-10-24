@@ -299,6 +299,7 @@ export default function Dashboard() {
         <ImageUpload file={file} preview={preview} onSelect={handleSelect} onRemove={handleRemove} disabled={loading} />
         <PredictionResult
           result={result}
+          predictionId={predictionId}
           onDownloadReport={predictionId ? downloadReport : undefined}
           downloadingReport={downloadingReport}
           onAnalyzeWeatherRisk={analyzeWeatherRisk}
