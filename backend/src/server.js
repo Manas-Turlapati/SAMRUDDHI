@@ -18,6 +18,7 @@ const translationRoutes = require("./routes/translationRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const weatherRiskRoutes = require("./routes/weatherRiskRoutes");
 const recoveryRoutes = require("./routes/recoveryRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const errorHandler = require("./middleware/errorMiddleware");
 
 dotenv.config({ path: path.join(__dirname, ".env") });
@@ -86,6 +87,7 @@ app.use("/api/translation", translationRoutes);
 app.use("/api/shops", shopRoutes);
 app.use("/api/weather-risk", weatherRiskRoutes);
 app.use("/api/recovery", recoveryRoutes);
+app.use("/api/admin", adminRoutes);
 app.get("/api/health", async (req, res) => {
   const mlApiUrl = await getMlApiUrl();
   res.json({

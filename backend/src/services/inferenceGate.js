@@ -3,6 +3,7 @@ const Diagnosis = require("../models/Diagnosis");
 const ExpertReview = require("../models/ExpertReview");
 const ReviewMagicToken = require("../models/ReviewMagicToken");
 const { notifyExperts } = require("./notifier");
+const jiraService = require("./jiraService");
 
 /** @param {Record<string, number>|Map<string, number>} probabilities */
 const calculateShannonEntropy = (probabilities) => {
@@ -63,6 +64,17 @@ const createExpertReview = async (diagnosis, { reason = diagnosis.flagReason } =
       flagReason: reason,
       magicUrl,
     }).catch((error) => console.error("Expert review notification failed:", error.message));
+
+    jiraService.createExpertReviewTicket({
+      diagnosisId: diagnosis._id.toString(),
+      reviewId: review.reviewId,
+      imageUrl,
+      predictedDisease: diagnosis.modelPrediction.predictedClass,
+      confidence: diagnosis.modelPrediction.confidence,
+      entropy: diagnosis.modelPrediction.entropy,
+      flagReason: reason,
+      magicUrl,
+    }).catch((error) => console.error("Jira expert review ticket creation failed:", error.message));
   });
   return review;
 };

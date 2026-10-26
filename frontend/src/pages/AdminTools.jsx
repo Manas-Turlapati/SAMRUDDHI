@@ -7,6 +7,13 @@ export default function AdminTools() {
   const [exportMessage, setExportMessage] = useState("");
   const [exportError, setExportError] = useState("");
 
+  const [jiraState, setJiraState] = useState({
+    loading: false,
+    status: null,
+    testResult: null,
+    error: "",
+  });
+
   const [telemetry, setTelemetry] = useState({
     backend: { status: "checking", latency: null, details: null },
     ml: { status: "checking", latency: null, details: null },
@@ -72,6 +79,55 @@ export default function AdminTools() {
       setTelemetry((prev) => ({
         ...prev,
         scans: { total: 0, loading: false },
+      }));
+    }
+
+    // 5. Fetch Jira Integration Status
+    try {
+      const { data } = await api.get("/admin/jira/status");
+      setJiraState((prev) => ({ ...prev, status: data.jira }));
+    } catch {
+      // Ignored if not configured
+    }
+  };
+
+  const handleTestJira = async () => {
+    setJiraState((prev) => ({ ...prev, loading: true, testResult: null, error: "" }));
+    try {
+      const { data } = await api.post("/admin/jira/test");
+      setJiraState((prev) => ({ ...prev, loading: false, testResult: data }));
+    } catch (err) {
+      setJiraState((prev) => ({
+        ...prev,
+        loading: false,
+        error: getApiError(err, "Failed to connect to Jira"),
+      }));
+    }
+  };
+
+  const handleCreateSampleTicket = async () => {
+    setJiraState((prev) => ({ ...prev, loading: true, testResult: null, error: "" }));
+    try {
+      const { data } = await api.post("/admin/jira/sample-ticket");
+      setJiraState((prev) => ({
+        ...prev,
+        loading: false,
+        testResult: {
+          success: data.success,
+          message: data.result?.skipped
+            ? `Ticket skipped: ${data.result.reason}`
+            : data.result?.url
+              ? `Ticket created successfully: ${data.result.key}`
+              : "Ticket operation processed",
+          key: data.result?.key,
+          url: data.result?.url,
+        },
+      }));
+    } catch (err) {
+      setJiraState((prev) => ({
+        ...prev,
+        loading: false,
+        error: getApiError(err, "Failed to trigger sample ticket"),
       }));
     }
   };
@@ -345,6 +401,132 @@ export default function AdminTools() {
               </p>
             </div>
           </div>
+        </section>
+
+        {/* Module 3: Atlassian Jira Cloud Integration */}
+        <section className="admin-panel-card jira-panel">
+          <div className="panel-header">
+            <div className="panel-icon-wrap">📋</div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
+                <h2 style={{ margin: 0 }}>Atlassian Jira Cloud Integration</h2>
+                <span
+                  className={`status-bubble ${
+                    jiraState.status?.configured && jiraState.status?.enabled
+                      ? "telemetry-online"
+                      : "telemetry-degraded"
+                  }`}
+                  style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem" }}
+                >
+                  {jiraState.status?.configured && jiraState.status?.enabled
+                    ? "SYNC ACTIVE"
+                    : jiraState.status?.configured
+                      ? "CONFIGURED (DISABLED)"
+                      : "STANDBY / ENV PENDING"}
+                </span>
+              </div>
+              <p>
+                Automated Agile issue tracking for low-confidence pathologist triage and operational incident management.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: "1rem",
+              background: "#f8fafc",
+              padding: "1rem",
+              borderRadius: "0.75rem",
+              border: "1px solid #e2e8f0",
+              marginBottom: "1.25rem",
+            }}
+          >
+            <div>
+              <span style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                Target Project Key
+              </span>
+              <p style={{ margin: "0.25rem 0 0", fontFamily: "monospace", fontWeight: 700, fontSize: "1rem" }}>
+                {jiraState.status?.projectKey || "SAM"}
+              </p>
+            </div>
+            <div>
+              <span style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                Default Issue Type
+              </span>
+              <p style={{ margin: "0.25rem 0 0", fontWeight: 600 }}>
+                {jiraState.status?.issueType || "Task / Bug"}
+              </p>
+            </div>
+            <div>
+              <span style={{ fontSize: "0.75rem", color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                Jira Cloud Host
+              </span>
+              <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "#334155" }}>
+                {jiraState.status?.host || "Configure in backend/.env"}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "1.25rem", fontSize: "0.88rem", color: "#475569", lineHeight: 1.5 }}>
+            <strong style={{ color: "#0f172a" }}>Automated Jira Trigger Rules:</strong>
+            <ul style={{ margin: "0.4rem 0 0 1.25rem", padding: 0 }}>
+              <li>
+                <strong>Uncertainty Gating:</strong> Scans with Confidence &lt; 70% or Shannon Entropy &gt; 1.20 auto-create a high-priority <code>Task</code> linked to the pathologist canvas.
+              </li>
+              <li>
+                <strong>Operational Incident Watchdog:</strong> Unhandled 500 server errors or ML failovers auto-log an incident <code>Bug</code> with stack trace telemetry.
+              </li>
+            </ul>
+          </div>
+
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+            <button
+              type="button"
+              className="admin-ping-btn"
+              onClick={handleTestJira}
+              disabled={jiraState.loading}
+            >
+              {jiraState.loading ? "Connecting to Jira…" : "🔌 Test Jira Connection"}
+            </button>
+            <button
+              type="button"
+              className="admin-primary-btn"
+              onClick={handleCreateSampleTicket}
+              disabled={jiraState.loading}
+              style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}
+            >
+              ⚡ Simulate Triage Ticket
+            </button>
+          </div>
+
+          {jiraState.testResult && (
+            <div
+              className={`admin-feedback-alert ${jiraState.testResult.connected || jiraState.testResult.success ? "success" : "info"}`}
+              style={{ marginTop: "1rem" }}
+            >
+              {jiraState.testResult.message}
+              {jiraState.testResult.url && (
+                <div style={{ marginTop: "0.4rem" }}>
+                  <a
+                    href={jiraState.testResult.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontWeight: 700, color: "#15803d", textDecoration: "underline" }}
+                  >
+                    Open Ticket in Jira ({jiraState.testResult.key}) ↗
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+
+          {jiraState.error && (
+            <div className="admin-feedback-alert error" style={{ marginTop: "1rem" }}>
+              ✕ {jiraState.error}
+            </div>
+          )}
         </section>
       </div>
     </div>
