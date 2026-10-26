@@ -4,7 +4,7 @@ const { getNearbyShops } = require("../services/shopService");
 const nearbyShops = asyncHandler(async (req, res) => {
   const { latitude, longitude, fertilizer, limit, radiusKm } = req.query;
 
-  const result = getNearbyShops({
+  const result = await getNearbyShops({
     latitude,
     longitude,
     fertilizer,
@@ -18,6 +18,9 @@ const nearbyShops = asyncHandler(async (req, res) => {
     requestedRadiusKm: result.requestedRadiusKm,
     radiusKm: result.radiusKm,
     radiusExpanded: result.radiusExpanded,
+    detectedLocation: result.detectedLocation,
+    googleMapsSearchUrl: result.googleMapsSearchUrl,
+    embedMapUrl: result.embedMapUrl,
     shops: result.shops,
   });
 });

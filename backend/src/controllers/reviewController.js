@@ -76,47 +76,64 @@ const submitReview = asyncHandler(async (req, res) => {
     throw new Error("Severity must be an integer from 1 to 5.");
   }
 
-  const session = await mongoose.startSession();
-  let result;
-  try {
-    await session.withTransaction(async () => {
-      const review = await ExpertReview.findOne({ reviewId: req.params.reviewId, status: "PENDING" }).session(session);
-      if (!review) throw Object.assign(new Error("This review is no longer pending."), { statusCode: 409 });
-      const diagnosis = await Diagnosis.findById(review.diagnosisId).select("+rawImage modelPrediction farmerId").session(session);
-      if (!diagnosis) throw Object.assign(new Error("Diagnosis not found."), { statusCode: 404 });
+  const executeSubmit = async (session) => {
+    const opts = session ? { session } : {};
+    const reviewQuery = ExpertReview.findOne({ reviewId: req.params.reviewId, status: "PENDING" });
+    const review = session ? await reviewQuery.session(session) : await reviewQuery;
+    if (!review) throw Object.assign(new Error("This review is no longer pending."), { statusCode: 409 });
+    const diagnosisQuery = Diagnosis.findById(review.diagnosisId).select("+rawImage modelPrediction farmerId");
+    const diagnosis = session ? await diagnosisQuery.session(session) : await diagnosisQuery;
+    if (!diagnosis) throw Object.assign(new Error("Diagnosis not found."), { statusCode: 404 });
 
-      review.status = status;
-      review.expertId = req.user?._id || null;
-      review.expertDiagnosis = {
-        confirmedDisease: String(confirmedDisease || diagnosis.modelPrediction.predictedClass).trim(),
-        severityScore: status === "REJECTED" ? undefined : severity,
-        customPrescription: typeof customPrescription === "string" ? customPrescription.trim() : JSON.stringify(customPrescription || {}),
+    review.status = status;
+    review.expertId = req.user?._id || null;
+    review.expertDiagnosis = {
+      confirmedDisease: String(confirmedDisease || diagnosis.modelPrediction.predictedClass).trim(),
+      severityScore: status === "REJECTED" ? undefined : severity,
+      customPrescription: typeof customPrescription === "string" ? customPrescription.trim() : JSON.stringify(customPrescription || {}),
+      annotationGeoJson: annotationGeoJson || null,
+    };
+    review.reviewedAt = new Date();
+    const eligible = status !== "REJECTED" && Boolean(diagnosis.rawImage);
+    review.activeLearningEligible = eligible;
+    await review.save(opts);
+
+    diagnosis.reviewStatus = status === "REJECTED" ? "REVIEW_REJECTED" : "EXPERT_VERIFIED";
+    diagnosis.pdfReportUrl = status === "REJECTED" ? undefined : `/reviews/${review.reviewId}/report`;
+    await diagnosis.save(opts);
+
+    if (eligible) {
+      await ActiveLearningSample.create([{
+        reviewId: review._id,
+        diagnosisId: diagnosis._id,
+        farmerId: diagnosis.farmerId,
+        image: diagnosis.rawImage,
+        imageMimeType: diagnosis.imageMimeType,
+        groundTruth: review.expertDiagnosis.confirmedDisease,
         annotationGeoJson: annotationGeoJson || null,
-      };
-      review.reviewedAt = new Date();
-      const eligible = status !== "REJECTED" && Boolean(diagnosis.rawImage);
-      review.activeLearningEligible = eligible;
-      await review.save({ session });
+      }], opts);
+    }
+    return { review, diagnosis };
+  };
 
-      diagnosis.reviewStatus = status === "REJECTED" ? "REVIEW_REJECTED" : "EXPERT_VERIFIED";
-      diagnosis.pdfReportUrl = status === "REJECTED" ? undefined : `/reviews/${review.reviewId}/report`;
-      await diagnosis.save({ session });
-
-      if (eligible) {
-        await ActiveLearningSample.create([{
-          reviewId: review._id,
-          diagnosisId: diagnosis._id,
-          farmerId: diagnosis.farmerId,
-          image: diagnosis.rawImage,
-          imageMimeType: diagnosis.imageMimeType,
-          groundTruth: review.expertDiagnosis.confirmedDisease,
-          annotationGeoJson: annotationGeoJson || null,
-        }], { session });
-      }
-      result = { review, diagnosis };
+  let result;
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      result = await executeSubmit(session);
     });
+  } catch (err) {
+    if (err.message && err.message.includes("Transaction numbers are only allowed on a replica set member or mongos")) {
+      // Standalone MongoDB without replica set (e.g. offline local development)
+      result = await executeSubmit(null);
+    } else {
+      throw err;
+    }
   } finally {
-    await session.endSession();
+    if (session) {
+      await session.endSession();
+    }
   }
 
   if (req.user?._id) result.review.expertId = req.user._id;

@@ -36,7 +36,9 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await login({ ...form, role: selectedRole });
+      const cleanEmail = form.email.trim().toLowerCase();
+      const cleanPassword = form.password.trim();
+      await login({ email: cleanEmail, password: cleanPassword, role: selectedRole });
       const roleHome = selectedRole === "admin" ? "/admin" : selectedRole === "expert" ? "/expert/reviews" : "/dashboard";
       navigate(location.state?.from?.pathname || roleHome, { replace: true });
     } catch (err) {

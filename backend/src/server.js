@@ -30,20 +30,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({origin:"*"}));
 const connectDB = async () => {
+  const localUri = process.env.MONGO_URI_LOCAL || "mongodb://127.0.0.1:27017/ldfrs";
+  const atlasUri = process.env.MONGO_URI_ATLAS || (process.env.MONGO_URI?.includes("mongodb+srv") ? process.env.MONGO_URI : null);
+  const useLocal = process.env.DATABASE_MODE !== "cloud";
+  const primaryUri = useLocal ? localUri : (atlasUri || localUri);
+  const fallbackUri = useLocal ? atlasUri : localUri;
+
   try {
-    // Keep the hosted Atlas URI as the default, while allowing the same local
-    // backend to run against the laptop's MongoDB for offline demos.
-    const mongoUri = process.env.DATABASE_MODE === "local"
-      ? (process.env.MONGO_URI_LOCAL || "mongodb://127.0.0.1:27017/ldfrs")
-      : process.env.MONGO_URI;
-    if (!mongoUri) {
-      throw new Error("Set MONGO_URI, or set DATABASE_MODE=local for laptop MongoDB.");
-    }
-    await mongoose.connect(mongoUri);
-    console.log("MongoDB connected successfully!");
+    await mongoose.connect(primaryUri, { serverSelectionTimeoutMS: 5000 });
+    console.log(`Connected to ${useLocal ? "Local MongoDB (mongodb://127.0.0.1:27017/ldfrs)" : "Cloud Atlas Database"}: database '${mongoose.connection.name}'`);
   } catch (err) {
-    console.error("MongoDB connection failed:", err.message);
-    process.exit(1);
+    console.warn(`Primary database connection (${primaryUri}) failed: ${err.message}`);
+    if (fallbackUri) {
+      try {
+        console.log(`Attempting fallback database connection to ${fallbackUri}...`);
+        await mongoose.connect(fallbackUri, { serverSelectionTimeoutMS: 5000 });
+        console.log(`Connected to fallback database: '${mongoose.connection.name}'`);
+        return;
+      } catch (fallbackErr) {
+        console.error("Fallback MongoDB connection also failed:", fallbackErr.message);
+      }
+    }
   }
 };
 
@@ -119,6 +126,14 @@ app.get("/", (req, res) => {
 });
 
 app.use(errorHandler);
+
+httpServer.on("error", (err) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`Error: Port ${PORT} is already in use. Please terminate any running Node process on port ${PORT}.`);
+  } else {
+    console.error("HTTP Server Error:", err);
+  }
+});
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

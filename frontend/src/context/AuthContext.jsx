@@ -26,12 +26,16 @@ export function AuthProvider({ children }) {
           setUser(data.user);
           localStorage.setItem("ldfrs_user", JSON.stringify(data.user));
         }
-      } catch {
+      } catch (err) {
         if (active) {
-          setToken(null);
-          setUser(null);
-          localStorage.removeItem("ldfrs_token");
-          localStorage.removeItem("ldfrs_user");
+          // Only clear session if server explicitly returned 401 Unauthorized
+          // (Prevents wiping out logged-in user when offline or network drops)
+          if (err.response?.status === 401) {
+            setToken(null);
+            setUser(null);
+            localStorage.removeItem("ldfrs_token");
+            localStorage.removeItem("ldfrs_user");
+          }
         }
       } finally {
         if (active) {

@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 
 const { analyzeDiseaseRisk } = require("../services/diseaseRiskService");
-const { getCurrentWeather } = require("../services/weatherService");
+const { getSmartSprayForecast } = require("../services/weatherService");
 
 const analyzeWeatherRisk = asyncHandler(async (req, res) => {
   const { location, latitude, longitude, disease } = req.body;
@@ -18,7 +18,7 @@ const analyzeWeatherRisk = asyncHandler(async (req, res) => {
   }
 
   const locationQuery = hasCoordinates ? `${Number(latitude)},${Number(longitude)}` : String(location).trim();
-  const weatherResult = await getCurrentWeather(locationQuery);
+  const weatherResult = await getSmartSprayForecast(locationQuery, disease);
   const diseaseRisk = analyzeDiseaseRisk({
     disease,
     weather: weatherResult.weather,
@@ -28,6 +28,7 @@ const analyzeWeatherRisk = asyncHandler(async (req, res) => {
     success: true,
     location: weatherResult.location,
     weather: weatherResult.weather,
+    smartSpray: weatherResult.smartSpray,
     disease_risk: diseaseRisk,
   });
 });

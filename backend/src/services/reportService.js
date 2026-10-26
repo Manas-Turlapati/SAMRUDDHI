@@ -108,6 +108,7 @@ const createPredictionReport = ({ prediction, user }) => {
   addKeyValue(doc, "Application Method", recommendation.application_method);
   addKeyValue(doc, "Frequency", recommendation.frequency);
   addKeyValue(doc, "Reason", recommendation.reason);
+  if (recommendation.precaution) addKeyValue(doc, "Precaution", recommendation.precaution);
 
   const treatment = prediction.diseaseInformation?.actionableTreatment;
   if (treatment?.actions?.length) {

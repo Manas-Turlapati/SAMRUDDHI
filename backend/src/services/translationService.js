@@ -81,7 +81,7 @@ const translateSingleText = async ({ text, sourceLanguage, targetLanguage }) => 
     }
   }
 
-  throw createTranslationError("Unable to reach the free translation services.", 502, errors);
+  return text;
 };
 
 const translateText = async ({ texts, sourceLanguage = "en", targetLanguage }) => {

@@ -22,6 +22,10 @@ export default function Dashboard() {
   const [shops, setShops] = useState([]);
   const [shopRadiusKm, setShopRadiusKm] = useState(10);
   const [shopRadiusExpanded, setShopRadiusExpanded] = useState(false);
+  const [shopLocation, setShopLocation] = useState(null);
+  const [googleMapsSearchUrl, setGoogleMapsSearchUrl] = useState("");
+  const [embedMapUrl, setEmbedMapUrl] = useState("");
+  const [userCoords, setUserCoords] = useState(null);
   const [searchedShops, setSearchedShops] = useState(false);
   const [shopError, setShopError] = useState("");
   const [message, setMessage] = useState("");
@@ -58,6 +62,10 @@ export default function Dashboard() {
     setShops([]);
     setShopRadiusKm(10);
     setShopRadiusExpanded(false);
+    setShopLocation(null);
+    setGoogleMapsSearchUrl("");
+    setEmbedMapUrl("");
+    setUserCoords(null);
     setSearchedShops(false);
     setShopError("");
     setWeatherRisk(null);
@@ -76,6 +84,10 @@ export default function Dashboard() {
     setShops([]);
     setShopRadiusKm(10);
     setShopRadiusExpanded(false);
+    setShopLocation(null);
+    setGoogleMapsSearchUrl("");
+    setEmbedMapUrl("");
+    setUserCoords(null);
     setSearchedShops(false);
     setShopError("");
     setWeatherRisk(null);
@@ -99,6 +111,7 @@ export default function Dashboard() {
     try {
       const position = await getCurrentLocation();
       const { latitude, longitude } = position.coords;
+      setUserCoords({ latitude, longitude });
       const { data } = await api.post("/weather-risk/analyze", {
         latitude,
         longitude,
@@ -190,7 +203,7 @@ export default function Dashboard() {
         recommendation: data.recommendation,
         diseaseInformation: data.disease_information,
       };
-      setMessage("Analysis completed. Your report is available to download.");
+      setMessage("Analysis completed. Your diagnosis and treatment plan are ready below.");
       setResult(nextResult);
       setWeatherRisk(null);
       setWeatherRiskError("");
@@ -199,6 +212,10 @@ export default function Dashboard() {
       setShops([]);
       setShopRadiusKm(10);
       setShopRadiusExpanded(false);
+      setShopLocation(null);
+      setGoogleMapsSearchUrl("");
+      setEmbedMapUrl("");
+    setUserCoords(null);
       setSearchedShops(false);
       setShopError("");
 
@@ -225,6 +242,7 @@ export default function Dashboard() {
     try {
       const position = await getCurrentLocation();
       const { latitude, longitude } = position.coords;
+      setUserCoords({ latitude, longitude });
       const { data } = await api.get("/shops/nearby", {
         params: {
           latitude,
@@ -237,6 +255,9 @@ export default function Dashboard() {
       setShops(data.shops || []);
       setShopRadiusKm(data.radiusKm || 10);
       setShopRadiusExpanded(Boolean(data.radiusExpanded));
+      setShopLocation(data.detectedLocation || null);
+      setGoogleMapsSearchUrl(data.googleMapsSearchUrl || "");
+      setEmbedMapUrl(data.embedMapUrl || "");
       setSearchedShops(true);
     } catch (error) {
       if (error.code === 1) {
@@ -255,48 +276,79 @@ export default function Dashboard() {
     <div className="page-content">
       <section className="dashboard-hero">
         <div>
-          <span className="eyebrow">Dashboard</span>
-          <h1>Hello, {user?.name || "farmer"}</h1>
-          <p>Upload a leaf image and get disease detection with fertilizer recommendation from the backend.</p>
+          <span className="eyebrow">🌱 AI Crop Doctor & Prescription</span>
+          <h1>Hello, {user?.name || "Farmer"}</h1>
+          <p>
+            Upload a crop leaf photo to identify diseases, get certified fertilizer dosage, and locate real suppliers on Google Maps.
+          </p>
         </div>
         <div className="dashboard-controls">
-          <button type="button" className="primary-button" onClick={handlePredict} disabled={loading}>
-            {loading ? "Analyzing leaf..." : "Predict Disease"}
-          </button>
+          {result ? (
+            <button type="button" className="secondary-button" onClick={handleRemove}>
+              🔄 Scan Another Leaf
+            </button>
+          ) : (
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                padding: "0.55rem 1rem",
+                background: "rgba(16, 185, 129, 0.12)",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+                borderRadius: "2rem",
+                color: "#065f46",
+                fontSize: "0.88rem",
+                fontWeight: 700,
+              }}
+            >
+              <span>🌾</span>
+              <span>Farmer Diagnostic Portal</span>
+            </div>
+          )}
         </div>
       </section>
 
-      <label className="location-consent"><input type="checkbox" checked={shareLocation} onChange={(event) => setShareLocation(event.target.checked)} /> Share my approximate GPS location with this diagnosis to help map disease reports.</label>
-
       <section className="farmer-steps" aria-label="How to use disease analysis">
-        <article>
+        <article className={!result && !loading ? "is-active" : ""}>
           <span>1</span>
           <div>
             <h2>Upload leaf photo</h2>
-            <p>Select a clear image of one crop leaf with visible symptoms.</p>
+            <p>Select or snap a photo of the affected crop leaf.</p>
           </div>
         </article>
-        <article>
+        <article className={loading || (result && !searchedShops) ? "is-active" : ""}>
           <span>2</span>
           <div>
-            <h2>Run analysis</h2>
-            <p>Get disease prediction, fertilizer guidance, and weather risk from your current location.</p>
+            <h2>AI diagnosis & dosage</h2>
+            <p>Get instant disease detection and fertilizer prescription.</p>
           </div>
         </article>
-        <article>
+        <article className={searchedShops ? "is-active" : ""}>
           <span>3</span>
           <div>
-            <h2>Find nearby shops</h2>
-            <p>Use location access to find fertilizer sellers and open directions or call options.</p>
+            <h2>Nearby shops on Maps</h2>
+            <p>Locate fertilizer dealers and RBK cooperatives on live maps.</p>
           </div>
         </article>
       </section>
 
       {message && <div className="error-message dashboard-message">{message}</div>}
-      {loading && <Loading label="Analyzing leaf..." />}
+      {loading && <Loading label="Analyzing leaf with AI models..." />}
 
       <div className="dashboard-grid">
-        <ImageUpload file={file} preview={preview} onSelect={handleSelect} onRemove={handleRemove} disabled={loading} />
+        <ImageUpload
+          file={file}
+          preview={preview}
+          onSelect={handleSelect}
+          onRemove={handleRemove}
+          disabled={loading}
+          onPredict={handlePredict}
+          loading={loading}
+          shareLocation={shareLocation}
+          onToggleShareLocation={setShareLocation}
+          hasResult={Boolean(result)}
+        />
         <PredictionResult
           result={result}
           predictionId={predictionId}
@@ -322,6 +374,10 @@ export default function Dashboard() {
           fertilizer={result.recommendation?.fertilizer}
           radiusKm={shopRadiusKm}
           radiusExpanded={shopRadiusExpanded}
+          detectedLocation={shopLocation}
+          googleMapsSearchUrl={googleMapsSearchUrl}
+          embedMapUrl={embedMapUrl}
+          userCoords={userCoords}
           onFindShops={findNearbyShops}
         />
       )}

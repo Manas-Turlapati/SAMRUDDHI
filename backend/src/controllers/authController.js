@@ -95,7 +95,9 @@ const register = asyncHandler(async (req, res) => {
 
 // LOGIN
 const login = asyncHandler(async (req, res) => {
-  const { email, password, role: requestedRole } = req.body;
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const password = String(req.body.password || "").trim();
+  const requestedRole = req.body.role;
 
   if (!email || !password) {
     res.status(400);
