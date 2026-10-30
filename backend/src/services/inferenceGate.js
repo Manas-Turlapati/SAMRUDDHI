@@ -1,3 +1,30 @@
+/**
+ * ====================================================================================================
+ *                SAMRUDDHI - UNCERTAINTY INFERENCE GATING & HITL WORKFLOW
+ * ====================================================================================================
+ *
+ *  [ Python ML Output ] ──▶ Softmax Confidence & 38 Class Probabilities
+ *           │
+ *           ▼
+ *  [ Shannon Entropy: H(X) = -Σ P(x) * log2(P(x)) ]
+ *           │
+ *           ├──▶ Confidence < 0.70  OR  Entropy > 1.20  OR  FarmerRequested:
+ *           │       │
+ *           │       ▼
+ *           │    [ QUARANTINE: reviewStatus = "PENDING_EXPERT_REVIEW" ]
+ *           │       • Save raw image buffer & Grad-CAM heatmap buffer in MongoDB
+ *           │       • Issue 48-hr cryptographic SHA-256 magic token for pathologist
+ *           │       • Webhook alert: notifyExperts()
+ *           │       • Auto-create Jira Task via Jira REST API: createExpertReviewTicket()
+ *           │
+ *           └──▶ Confident (Confidence >= 0.70 AND Entropy <= 1.20):
+ *                   │
+ *                   ▼
+ *                [ AUTOMATED: reviewStatus = "AUTOMATED_REVIEW" ]
+ *                   • Direct delivery of certified fertilizer prescription & spray window
+ * ====================================================================================================
+ */
+
 const crypto = require("crypto");
 const Diagnosis = require("../models/Diagnosis");
 const ExpertReview = require("../models/ExpertReview");

@@ -172,6 +172,52 @@ const calculateSmartSprayAdvisory = ({ current, forecastDays, disease }) => {
     summary = `Spraying is possible with caution (${currentEval.reason}). Target early morning or late evening for best droplet retention.`;
   }
 
+  // Build 3-Day Multi-Day Agronomic Forecast
+  const dailyForecast = (forecastDays || []).slice(0, 3).map((d, index) => {
+    const rainChance = Number(d.day?.daily_chance_of_rain || 0);
+    const maxWind = Number(d.day?.maxwind_kph || 0);
+    const maxTemp = Number(d.day?.maxtemp_c || 25);
+    const minTemp = Number(d.day?.mintemp_c || 18);
+    const totalPrecip = Number(d.day?.totalprecip_mm || 0);
+
+    let suitability = "optimal";
+    let suitabilityLabel = "Ideal Spray Conditions";
+    let color = "#16a34a";
+    let badge = "Safe";
+
+    if (rainChance >= 40 || totalPrecip >= 1.5 || maxWind >= 20 || maxTemp >= 35) {
+      suitability = "poor";
+      suitabilityLabel = rainChance >= 40 ? "Rain wash-off risk" : maxWind >= 20 ? "High wind drift" : "High heat / scorch";
+      color = "#dc2626";
+      badge = "Avoid";
+    } else if (rainChance >= 20 || maxWind >= 14 || maxTemp >= 31) {
+      suitability = "caution";
+      suitabilityLabel = rainChance >= 20 ? "Possible drizzle" : maxWind >= 14 ? "Moderate wind" : "Warm afternoon";
+      color = "#d97706";
+      badge = "Caution";
+    }
+
+    const dayLabel = index === 0 ? "Today" : index === 1 ? "Tomorrow" : new Date(d.date + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short" });
+    const formattedDate = new Date(d.date + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    return {
+      date: d.date,
+      dayLabel,
+      formattedDate,
+      maxTemp: Math.round(maxTemp),
+      minTemp: Math.round(minTemp),
+      rainChance,
+      totalPrecip,
+      maxWind: Math.round(maxWind),
+      condition: d.day?.condition?.text || "Clear",
+      icon: d.day?.condition?.icon ? (d.day.condition.icon.startsWith("//") ? `https:${d.day.condition.icon}` : d.day.condition.icon) : null,
+      suitability,
+      suitabilityLabel,
+      color,
+      badge,
+    };
+  });
+
   return {
     status: currentEval.status,
     badge: currentEval.status === "optimal" ? "Safe to Spray / Fertilize" : currentEval.status === "caution" ? "Spray with Caution" : "Do Not Spray (Postpone)",
@@ -195,6 +241,7 @@ const calculateSmartSprayAdvisory = ({ current, forecastDays, disease }) => {
       leafDrying,
     },
     hourlyForecast: hourlyForecast.slice(0, 10),
+    dailyForecast,
   };
 };
 
@@ -314,6 +361,11 @@ const getSmartSprayForecast = async (locationQuery, disease) => {
           { time: "9:00 AM", temp_c: 27, humidity: 52, wind_kph: 11, chance_of_rain: 0, precip_mm: 0, condition: "Moderate Sun", icon: null, suitability: "caution", suitabilityLabel: "Caution", color: "#d97706", reason: "Rising temperature" },
           { time: "12:00 PM", temp_c: 32, humidity: 38, wind_kph: 16, chance_of_rain: 0, precip_mm: 0, condition: "Midday Heat", icon: null, suitability: "poor", suitabilityLabel: "Do Not Spray", color: "#dc2626", reason: "High heat & evaporation" },
           { time: "5:00 PM", temp_c: 28, humidity: 55, wind_kph: 10, chance_of_rain: 0, precip_mm: 0, condition: "Late Afternoon", icon: null, suitability: "optimal", suitabilityLabel: "Optimal", color: "#16a34a", reason: "Calming wind & shade" }
+        ],
+        dailyForecast: [
+          { date: "Day 1", dayLabel: "Today", formattedDate: "Baseline", maxTemp: 30, minTemp: 20, rainChance: 5, totalPrecip: 0, maxWind: 10, condition: "Clear Morning", icon: null, suitability: "optimal", suitabilityLabel: "Ideal Spray Conditions", color: "#16a34a", badge: "Safe" },
+          { date: "Day 2", dayLabel: "Tomorrow", formattedDate: "Baseline", maxTemp: 31, minTemp: 21, rainChance: 10, totalPrecip: 0, maxWind: 12, condition: "Mostly Sunny", icon: null, suitability: "optimal", suitabilityLabel: "Favorable Spray Window", color: "#16a34a", badge: "Safe" },
+          { date: "Day 3", dayLabel: "Day 3", formattedDate: "Baseline", maxTemp: 32, minTemp: 22, rainChance: 25, totalPrecip: 0.5, maxWind: 15, condition: "Partly Cloudy", icon: null, suitability: "caution", suitabilityLabel: "Spray with Caution", color: "#d97706", badge: "Caution" }
         ],
       },
     };

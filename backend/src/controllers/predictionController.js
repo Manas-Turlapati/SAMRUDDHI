@@ -1,3 +1,20 @@
+/**
+ * ====================================================================================================
+ *                 SAMRUDDHI - 10-STEP PREDICTION & AGRONOMIC LIFECYCLE
+ * ====================================================================================================
+ *  1. [Farmer Upload]      ──▶ ImageUpload.jsx validates JPEG/PNG <= 5MB
+ *  2. [Client Post]        ──▶ Axios multipart/form-data POST /api/predictions/predict
+ *  3. [Gateway Reception]  ──▶ Multer intercepts binary stream in memory buffer
+ *  4. [ML Microservice]    ──▶ mlService.js streams buffer to FastAPI (Port 8001)
+ *  5. [Preprocessing]      ──▶ PIL RGB -> (224, 224) -> ToTensor() -> ImageNet Normalization
+ *  6. [Forward Pass]       ──▶ EfficientNet-B0 (4.06M params) -> Logits in R^38
+ *  7. [Softmax & Entropy]  ──▶ Softmax probabilities & Shannon Entropy calculation
+ *  8. [Argmax & Gating]    ──▶ idx = argmax(P), confidence = max(P)
+ *  9. [Taxonomy Parsing]   ──▶ "Tomato___Early_blight" -> ("Tomato", "Early Blight")
+ * 10. [Agronomic Delivery] ──▶ Fertilizer engine + Smart Spray weather + MongoDB persistence
+ * ====================================================================================================
+ */
+
 const asyncHandler = require("express-async-handler");
 
 const Prediction = require("../models/Prediction");

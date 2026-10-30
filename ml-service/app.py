@@ -1,7 +1,18 @@
 
 """
 LDFRS - Leaf Disease Detection and Fertilizer Recommendation System
-FastAPI ML Service
+FastAPI Machine Learning Inference Microservice (Port 8001)
+
+ML INFERENCE FLOW PIPELINE:
+-----------------------------------------------------------------------------------------
+1. [HTTP POST /predict] ──▶ Validate MIME (JPEG/PNG) & Size (<= 5MB)
+2. [run_in_threadpool]  ──▶ Non-blocking dispatch of CPU/GPU PyTorch inference
+3. [preprocessing.py]   ──▶ PIL RGB -> Resize (224, 224) -> ToTensor() -> ImageNet Norm
+4. [EfficientNet-B0]    ──▶ Forward pass through MBConv stages -> Logits in R^38
+5. [Softmax & Entropy]  ──▶ Softmax -> Confidence = max(P), Entropy = -SUM(p * log2(p))
+6. [Conditional CAM]    ──▶ If (Confidence < 0.70 or Entropy > 1.20) -> Compute Grad-CAM
+7. [JSON Response]      ──▶ Returns { crop, disease, confidence, probabilities, entropy }
+-----------------------------------------------------------------------------------------
 """
 
 from __future__ import annotations

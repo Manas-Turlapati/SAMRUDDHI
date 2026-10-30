@@ -238,6 +238,81 @@ export default function WeatherRiskPanel({
             </div>
           )}
 
+          {/* 3-Day Upcoming Days Spray Outlook */}
+          {smartSpray?.dailyForecast && smartSpray.dailyForecast.length > 0 && (
+            <div style={{ background: "rgba(255, 255, 255, 0.8)", border: "1px solid var(--line)", borderRadius: "0.85rem", padding: "0.85rem 1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                <span style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--green-900)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                  📅 3-Day Agronomic Spray Outlook
+                </span>
+                <span style={{ fontSize: "0.76rem", color: "var(--muted)" }}>
+                  Daily Spray Suitability
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem" }}>
+                {smartSpray.dailyForecast.map((d, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#ffffff",
+                      border: `1.5px solid ${d.color}35`,
+                      borderTop: `3px solid ${d.color}`,
+                      borderRadius: "0.75rem",
+                      padding: "0.75rem",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.35rem",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.03)",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <strong style={{ fontSize: "0.95rem", color: "var(--green-900)" }}>{d.dayLabel}</strong>
+                      <small style={{ fontSize: "0.74rem", color: "var(--muted)" }}>{d.formattedDate}</small>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", margin: "0.2rem 0" }}>
+                      {d.icon ? (
+                        <img src={d.icon} alt={d.condition} style={{ width: "28px", height: "28px" }} />
+                      ) : (
+                        <span>🌤️</span>
+                      )}
+                      <span style={{ fontSize: "0.78rem", color: "var(--foreground)", fontWeight: 600 }}>
+                        {d.condition}
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", color: "#334155" }}>
+                      <span>🌡️ <strong>{d.maxTemp}°</strong> / {d.minTemp}°C</span>
+                      <span style={{ color: d.rainChance >= 30 ? "#dc2626" : "inherit" }}>
+                        🌧️ <strong>{d.rainChance}%</strong>
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: "0.74rem", color: "var(--muted)" }}>
+                      💨 Wind up to {d.maxWind} km/h
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: "0.25rem",
+                        padding: "0.25rem 0.5rem",
+                        borderRadius: "0.4rem",
+                        background: `${d.color}15`,
+                        color: d.color,
+                        fontSize: "0.72rem",
+                        fontWeight: 800,
+                        textAlign: "center",
+                      }}
+                    >
+                      {d.badge}: {d.suitabilityLabel}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Disease Environmental Risk Factor */}
           {weatherRisk.disease_risk && (
             <div style={{ background: "rgba(255, 255, 255, 0.65)", border: "1px solid var(--line)", borderRadius: "0.85rem", padding: "0.85rem 1rem" }}>

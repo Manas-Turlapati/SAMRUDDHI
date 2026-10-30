@@ -1,9 +1,68 @@
 """
 services/disease_prediction.py
 
-Was an empty placeholder file. Loads disease_model.pth (EfficientNet-B0,
-38 PlantVillage classes, verified by inspecting the checkpoint directly)
-and runs prediction on an uploaded leaf image.
+Loads disease_model.pth (EfficientNet-B0, 38 PlantVillage classes)
+and executes the complete machine learning inference pipeline with
+Shannon Entropy uncertainty estimation and on-demand Grad-CAM explainability.
+
+====================================================================================================
+                        SAMRUDDHI - MACHINE LEARNING INFERENCE FLOW DIAGRAM
+====================================================================================================
+
+  [ 1. RAW IMAGE INPUT ]
+         │  Uploaded by farmer via Frontend (JPG / JPEG / PNG <= 5MB)
+         ▼
+  [ 2. FASTAPI STREAM RECEPTION (app.py: /predict) ]
+         │  Asynchronous upload validation; dispatches to threadpool
+         ▼
+  [ 3. PREPROCESSING PIPELINE (preprocessing.py) ]
+         │  • PIL decode bytes -> RGB (strips alpha channel)
+         │  • Resize: (224, 224) via bilinear interpolation
+         │  • ToTensor(): Rescales pixels [0, 255] -> [0.0, 1.0]
+         │  • Normalize: ImageNet mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
+         │  • Unsqueeze(0): Adds batch dim -> Tensor shape: (1, 3, 224, 224)
+         ▼
+  [ 4. DEEP LEARNING BACKBONE (disease_prediction.py: EfficientNet-B0) ]
+         │  • Stem Conv: 3x3 Conv2d -> (32, 112, 112)
+         │  • Stages 2-8: MBConv inverted residual blocks + Squeeze-and-Excitation
+         │  • Stage 9: Final conv features[-1] (1280 channels)
+         │  • AdaptiveAvgPool2d(1) -> 1280-dim feature vector
+         │  • Linear Classifier Head: nn.Linear(1280, 38)
+         │  • Output: Raw Logits z in R^38
+         ▼
+  [ 5. PROBABILISTIC INFERENCE & CONFIDENCE ]
+         │  • Softmax: P(y_i) = exp(z_i) / SUM(exp(z_j))
+         │  • Predicted Index: idx = argmax(P)
+         │  • Model Confidence: confidence = max(P)
+         │  • Taxonomy Parser: "Crop___Disease" -> ("Crop", "Disease")
+         ▼
+  [ 6. UNCERTAINTY ESTIMATION (Shannon Entropy) ]
+         │  • Entropy: H(X) = - SUM [ P(y_i) * log2(P(y_i)) ] across all 38 classes
+         │
+         ├──▶ IF (Confidence < 0.70 OR Entropy > 1.20 bits):
+         │       │
+         │       ├──▶ [ EXPLAINABLE AI: GRAD-CAM SALIENCY HOOK ]
+         │       │       • Hook on features[-1] -> alpha_k = (1/Z) * SUM( d(logit_c) / d(A^k) )
+         │       │       • Heatmap = ReLU( SUM( alpha_k * A^k ) ) -> Bilinear (224, 224)
+         │       │       • Colorize black-to-red (#ff3b00) + Alpha blend (0.42) with leaf
+         │       │       • Returns gradcam_base64
+         │       │
+         │       └──▶ [ HUMAN-IN-THE-LOOP EXPERT TRIAGE GATE (inferenceGate.js) ]
+         │               • Status: PENDING_EXPERT_REVIEW
+         │               • Generates 48-hr cryptographic SHA-256 magic token
+         │               • Alerts Extension Pathologist for review on canvas
+         │
+         └──▶ ELSE (Confident & Low Entropy):
+                 • Status: AUTOMATED_REVIEW
+                 • Direct delivery to farmer
+         ▼
+  [ 7. AGRONOMIC INTERLOCKING (predictionController.js) ]
+         │  • Fertilizer Engine: Certified commercial NPK formulations (e.g. 13-0-45)
+         │  • Smart Spray Advisor: 24-hr hourly rain, wind, and leaf scorch check
+         │  • Nearby Shops: Geodesic PACS & RBK cooperative map placement
+         ▼
+  [ 8. MONGODB PERSISTENCE & FRONTEND JSON DELIVERY ]
+====================================================================================================
 """
 from __future__ import annotations
 
